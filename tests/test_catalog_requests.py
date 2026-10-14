@@ -105,12 +105,7 @@ async def test_every_catalog_operation_can_be_sent(operation_id):
     assert request.method == operation["method"]
     assert request.url.host == "api.holded.com"
     assert "{" not in request.url.path
-    if operation["version"] == "v2":
-        assert request.url.path.startswith("/api/v2/")
-        assert request.headers["authorization"] == f"Bearer {API_KEY}"
-        assert "key" not in request.headers
-    else:
-        assert request.headers["key"] == API_KEY
-        assert "authorization" not in request.headers
+    assert request.url.path.startswith("/api/v2/")
+    assert request.headers["authorization"] == f"Bearer {API_KEY}"
     if "body" in arguments:
         assert json.loads(request.content) == arguments["body"]

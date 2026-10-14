@@ -43,29 +43,26 @@ async def test_mcp_discovery_and_read(transport, requests):
         assert tools["holded_write"].annotations.destructive_hint is True
         assert tools["holded_write"].annotations.idempotent_hint is False
         search_schema = tools["holded_search_operations"].input_schema["properties"]
-        assert {"search", "version", "api", "tag", "offset", "limit"} <= set(search_schema)
+        assert {"search", "api", "tag", "offset", "limit"} <= set(search_schema)
+        assert "version" not in search_schema
         found = await client.call_tool("holded_search_operations", {"search": "list invoices"})
         assert not found.is_error
         operations = found.structured_content["operations"]
-        assert "v2_list_invoices" in {op["operation_id"] for op in operations}
-        assert operations[0]["version"] == "v2"  # Current operations are listed first.
+        assert "list_invoices" in {op["operation_id"] for op in operations}
         assert set(operations[0]) == {
             "operation_id",
-            "version",
             "api",
             "method",
             "path",
             "summary",
             "tags",
         }
-        schema = await client.call_tool(
-            "holded_get_operation", {"operation_id": "v2_create_invoice"}
-        )
-        assert schema.structured_content["version"] == "v2"
+        schema = await client.call_tool("holded_get_operation", {"operation_id": "create_invoice"})
+        assert "version" not in schema.structured_content
         assert schema.structured_content["body_schema"]["required"] == ["contact_id", "items"]
         assert not requests  # Discovery stays offline.
         result = await client.call_tool(
-            "holded_read", {"operation_id": "v2_list_invoices", "query": {"limit": 5}}
+            "holded_read", {"operation_id": "list_invoices", "query": {"limit": 5}}
         )
         assert result.structured_content == {
             "status": 200,
@@ -74,16 +71,13 @@ async def test_mcp_discovery_and_read(transport, requests):
         assert requests[0].url == "https://api.holded.com/api/v2/invoices?limit=5"
         assert requests[0].headers["Authorization"] == f"Bearer {API_KEY}"
         assert "key" not in requests[0].headers
-        result = await client.call_tool(
-            "holded_read", {"operation_id": "v1_invoicing_ListContacts"}
-        )
+        result = await client.call_tool("holded_read", {"operation_id": "list_contacts"})
         assert not result.is_error
-        assert requests[1].url == "https://api.holded.com/api/invoicing/v1/contacts"
-        assert requests[1].headers["key"] == API_KEY
-        assert "authorization" not in requests[1].headers
+        assert requests[1].url == "https://api.holded.com/api/v2/contacts"
+        assert requests[1].headers["Authorization"] == f"Bearer {API_KEY}"
 
 
-async def test_search_filters_by_version_api_and_tag(transport, requests):
+async def test_search_filters_by_api_and_tag(transport, requests):
     async with Client(create_server(API_KEY, transport=transport)) as client:
 
         async def search(**args):
@@ -91,22 +85,19 @@ async def test_search_filters_by_version_api_and_tag(transport, requests):
             assert not result.is_error
             return result.structured_content
 
-        assert (await search())["total"] == 496
-        assert (await search(version="v2"))["total"] == 360
-        assert (await search(version="v1"))["total"] == 136
-        sales = await search(version="v2", api="sales")
+        assert (await search())["total"] == 360
+        sales = await search(api="sales")
         assert sales["total"] == 104
         assert all(op["api"] == "sales" for op in sales["operations"])
         crm = await search(api="crm")
-        assert {op["version"] for op in crm["operations"]} == {"v1", "v2"}
-        assert crm["total"] == 17 + 29
-        assert (await search(version="v1", api="sales"))["total"] == 0
-        invoices = await search(tag="invoices", version="v2")
+        assert crm["total"] == 17
+        assert all(op["api"] == "crm" for op in crm["operations"])
+        invoices = await search(tag="invoices")
         assert invoices["total"] > 0
         assert all(op["tags"] == ["Invoices"] for op in invoices["operations"])
         by_path = await search(search="/api/v2/invoices/find-by-number")
         assert [op["operation_id"] for op in by_path["operations"]] == [
-            "v2_find_invoices_by_document_number"
+            "find_invoices_by_document_number"
         ]
         assert not requests
 
@@ -115,18 +106,14 @@ async def test_read_only_cannot_discover_or_execute_writes(transport, requests):
     server = create_server(API_KEY, read_only=True, transport=transport)
     async with Client(server) as client:
         assert "holded_write" not in {tool.name for tool in (await client.list_tools()).tools}
-        for version in ("v1", "v2"):
-            offset = 0
-            while offset is not None:
-                found = (
-                    await client.call_tool(
-                        "holded_search_operations",
-                        {"version": version, "limit": 100, "offset": offset},
-                    )
-                ).structured_content
-                assert all(op["method"] == "GET" for op in found["operations"])
-                offset = found["next_offset"]
-        for operation_id in ("v2_delete_invoice", "v1_invoicing_DeleteContact"):
+        offset = 0
+        while offset is not None:
+            found = (
+                await client.call_tool("holded_search_operations", {"limit": 100, "offset": offset})
+            ).structured_content
+            assert all(op["method"] == "GET" for op in found["operations"])
+            offset = found["next_offset"]
+        for operation_id in ("delete_invoice", "delete_contact"):
             for tool in ("holded_read", "holded_get_operation"):
                 result = await client.call_tool(tool, {"operation_id": operation_id})
                 assert result.is_error
@@ -139,7 +126,7 @@ async def test_write_and_wrong_tool_rejection(transport, requests):
     async with Client(create_server(API_KEY, transport=transport)) as client:
         result = await client.call_tool(
             "holded_write",
-            {"operation_id": "v2_create_contact", "body": {"name": "Example"}},
+            {"operation_id": "create_contact", "body": {"name": "Example"}},
         )
         assert not result.is_error
         assert requests[0].method == "POST"
@@ -147,12 +134,12 @@ async def test_write_and_wrong_tool_rejection(transport, requests):
         assert requests[0].content == b'{"name":"Example"}'
         assert requests[0].headers["Authorization"] == f"Bearer {API_KEY}"
         for tool, operation in (
-            ("holded_write", "v2_list_invoices"),
-            ("holded_write", "v1_invoicing_ListContacts"),
-            ("holded_read", "v2_create_contact"),
-            ("holded_read", "v1_invoicing_CreateContact"),
-            ("holded_read", "v2_unknown_operation"),
-            ("holded_write", "invoicing_CreateContact"),
+            ("holded_write", "list_invoices"),
+            ("holded_write", "list_contacts"),
+            ("holded_read", "create_contact"),
+            ("holded_read", "update_contact"),
+            ("holded_read", "unknown_operation"),
+            ("holded_write", "v2_create_contact"),
         ):
             result = await client.call_tool(tool, {"operation_id": operation})
             assert result.is_error
@@ -163,7 +150,7 @@ async def test_invalid_arguments_never_reach_holded(transport, requests):
     async with Client(create_server(API_KEY, transport=transport)) as client:
         result = await client.call_tool(
             "holded_write",
-            {"operation_id": "v2_delete_invoice", "path_params": {"invoiceId": "not-an-id"}},
+            {"operation_id": "delete_invoice", "path_params": {"invoiceId": "not-an-id"}},
         )
         assert result.is_error
         assert "pattern" in str(result)
@@ -180,9 +167,9 @@ async def test_catalog_pagination_and_input_validation(transport, requests):
                 "holded_search_operations", {"limit": 1, "offset": first["next_offset"]}
             )
         ).structured_content
-        assert first["total"] == 496
+        assert first["total"] == 360
         assert first["operations"] != second["operations"]
-        for args in ({"limit": 101}, {"offset": -1}, {"version": "v3"}, {"api": "billing"}):
+        for args in ({"limit": 101}, {"offset": -1}, {"api": "billing"}, {"api": "invoicing"}):
             assert (await client.call_tool("holded_search_operations", args)).is_error
         assert (
             await client.call_tool("holded_get_operation", {"operation_id": "https://example.org"})
@@ -195,16 +182,16 @@ async def test_http_error_is_a_safe_mcp_error():
         lambda request: httpx.Response(403, json={"detail": request.headers["authorization"]})
     )
     async with Client(create_server("holded_secret", transport=transport)) as client:
-        result = await client.call_tool("holded_read", {"operation_id": "v2_list_invoices"})
+        result = await client.call_tool("holded_read", {"operation_id": "list_invoices"})
         assert result.is_error
         assert "holded_secret" not in str(result)
         assert "403" in str(result)
 
 
-def test_instructions_prefer_v2():
+def test_instructions_describe_the_catalog():
     server = create_server(API_KEY)
-    assert "prefer v2" in server.instructions
-    assert "deprecated" in server.instructions
+    assert "list_invoices" in server.instructions
+    assert "v2_" not in server.instructions
     assert "scope" in server.instructions
     assert "Write tools are enabled." in server.instructions
     assert "only permits reads" in create_server(API_KEY, read_only=True).instructions
@@ -219,9 +206,7 @@ async def test_actual_stdio_handshake():
     )
     async with Client(params) as client:
         assert len((await client.list_tools()).tools) == 3
-        result = await client.call_tool(
-            "holded_get_operation", {"operation_id": "v2_list_invoices"}
-        )
+        result = await client.call_tool("holded_get_operation", {"operation_id": "list_invoices"})
         assert not result.is_error
         assert result.structured_content["path"] == "/api/v2/invoices"
 

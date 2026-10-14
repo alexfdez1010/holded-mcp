@@ -1,4 +1,4 @@
-"""Validated, credential-safe transport for the published Holded API (v1 and v2)."""
+"""Validated, credential-safe transport for the published Holded API."""
 
 from __future__ import annotations
 
@@ -16,10 +16,8 @@ from jsonschema.exceptions import SchemaError, UnknownType
 
 MAX_UPLOAD_BYTES = 10 * 1024 * 1024
 MAX_DOWNLOAD_BYTES = 10 * 1024 * 1024
-APIS = ("invoicing", "crm", "projects", "team", "accounting")
 _ORIGIN = "https://api.holded.com"
-_V1_PATH = re.compile(r"/api/(?:" + "|".join(APIS) + r")/v1/[A-Za-z0-9_{}./-]+")
-_V2_PATH = re.compile(r"/api/v2/[A-Za-z0-9_{}./-]+")
+_PATH = re.compile(r"/api/v2/[A-Za-z0-9_{}./-]+")
 _PLACEHOLDER = re.compile(r"\{([A-Za-z_][A-Za-z0-9_]*)\}")
 _CONTROL = re.compile(r"[\x00-\x1f\x7f]")
 _FIELD = re.compile(r"[A-Za-z0-9_.-]+(?:\[(?:[0-9]*)\])?\Z")
@@ -64,27 +62,8 @@ def _schema_for_validation(schema: Any) -> Any:
     return result
 
 
-def api_version(operation: dict[str, Any]) -> str:
-    """Return "v1" or "v2" from the operation path, rejecting any other destination.
-
-    The path decides how the key is sent: v1 uses Holded's `key` header and v2 uses
-    `Authorization: Bearer`. A declared `version` must agree with the path.
-    """
-    path = operation.get("path")
-    if isinstance(path, str) and _V2_PATH.fullmatch(path):
-        version = "v2"
-    elif isinstance(path, str) and _V1_PATH.fullmatch(path):
-        version = "v1"
-    else:
-        raise HoldedError("Invalid Holded API path.")
-    if operation.get("version", version) != version:
-        raise HoldedError("Operation version does not match its API path.")
-    return version
-
-
 class HoldedClient:
-    """Send requests only to Holded, sending the API key once per request: in the `key`
-    header for v1 operations or as `Authorization: Bearer` for v2 operations."""
+    """Send requests only to Holded, authenticating with `Authorization: Bearer <key>`."""
 
     def __init__(
         self,
@@ -109,8 +88,10 @@ class HoldedClient:
             raise HoldedError("Request timeout must be a positive finite number.")
         self._api_key = api_key
         self._client = httpx.AsyncClient(
-            # No client-wide credential: each request carries exactly one auth header.
-            headers={"Accept": "application/json, */*;q=0.8"},
+            headers={
+                "Accept": "application/json, */*;q=0.8",
+                "Authorization": f"Bearer {api_key}",
+            },
             timeout=timeout,
             transport=transport,
             follow_redirects=False,
@@ -168,7 +149,8 @@ class HoldedClient:
         method, path = operation.get("method"), operation.get("path")
         if method not in {"GET", "POST", "PUT", "PATCH", "DELETE"}:
             raise HoldedError("Unsupported API method.")
-        api_version(operation)
+        if not isinstance(path, str) or not _PATH.fullmatch(path):
+            raise HoldedError("Invalid Holded API path.")
         if any(part in {".", "..", ""} for part in path.split("/")[1:]):
             raise HoldedError("Invalid Holded API path.")
         names = set(_PLACEHOLDER.findall(path))
@@ -326,11 +308,7 @@ class HoldedClient:
             raise HoldedError("This operation does not accept a request body.")
         if files is not None and content_type != "multipart/form-data":
             raise HoldedError("Files are only accepted by multipart upload operations.")
-        if api_version(operation) == "v2":
-            auth = {"Authorization": f"Bearer {self._api_key}"}
-        else:
-            auth = {"key": self._api_key}
-        kwargs: dict[str, Any] = {"params": params, "headers": auth}
+        kwargs: dict[str, Any] = {"params": params}
         if content_type == "multipart/form-data":
             if body is not None and not isinstance(body, dict):
                 raise HoldedError("Multipart request metadata must be an object.")

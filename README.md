@@ -2,12 +2,7 @@
 
 A local [Model Context Protocol](https://modelcontextprotocol.io/) server for [Holded](https://www.holded.com/)'s public API, built with the [official Python MCP SDK](https://github.com/modelcontextprotocol/python-sdk). Connect your MCP client to Holded using your own API key.
 
-The bundled catalog exposes **496 operations** from both Holded API generations through four discovery and execution tools:
-
-- **360 v2 operations** (current API): accounting (32), treasury (24), sales (104), inventory (78), contacts (20), crm (17), projects (17), team (37), calendar (12), inbox (9), and developers (10). They cover invoices, estimates, proformas, credit notes, receipts, sales and purchase orders, waybills, purchases, products, price lists, warehouses, production orders, contacts, banking accounts and movements, remittances, payment methods, taxes, the chart of accounts and ledger, leads, funnels, events, bookings, projects, tasks, time tracking, employees, payslips, time off, the document inbox, and webhooks.
-- **136 v1 operations** (deprecated, maintenance mode): invoicing (72), crm (29), projects (16), team (15), and accounting (4).
-
-Both versions use the same `HOLDED_API_KEY`. Prefer v2; use v1 only for something v2 does not offer. See [API coverage and limitations](docs/api-coverage.md).
+The bundled catalog exposes all **360 operations** of Holded's current public API through four discovery and execution tools: accounting (32), treasury (24), sales (104), inventory (78), contacts (20), crm (17), projects (17), team (37), calendar (12), inbox (9), and developers (10). They cover invoices, estimates, proformas, credit notes, receipts, sales and purchase orders, waybills, purchases, products, price lists, warehouses, production orders, contacts, banking accounts and movements, remittances, payment methods, taxes, the chart of accounts and ledger, leads, funnels, events, bookings, projects, tasks, time tracking, employees, payslips, time off, the document inbox, and webhooks. See [API coverage and limitations](docs/api-coverage.md).
 
 Requires Python 3.10 or newer. The server uses **stdio**: your MCP client starts and manages the process.
 
@@ -99,14 +94,7 @@ For read-only access, append `--read-only` to the registration command after `ho
 
 ## Authentication and configuration
 
-`HOLDED_API_KEY` contains the raw API key. The server sends it once per request, in the header the operation's API version expects:
-
-| Version | Paths | Header |
-| --- | --- | --- |
-| v2 | `/api/v2/...` | `Authorization: Bearer <key>` |
-| v1 | `/api/<api>/v1/...` | `key: <key>` |
-
-The key is never sent in both headers on the same request, and requests only go to `https://api.holded.com`. Each v2 endpoint also requires a permission scope (for example `sales:invoices.read`), listed in the operation's description; grant the scopes you need to the key in Holded. Each user runs their own local server with their own key.
+`HOLDED_API_KEY` contains the raw API key. The server sends it on every request as `Authorization: Bearer <key>`, and requests only go to `https://api.holded.com/api/v2/...`. Each endpoint also requires a permission scope (for example `sales:invoices.read`), listed in the operation's description; grant the scopes you need to the key in Holded. Each user runs their own local server with their own key.
 
 The server does not automatically load `.env` files and has no key command-line option. A missing or empty `HOLDED_API_KEY` causes startup to exit with a message on stderr. `--help` and `--version` work without credentials.
 
@@ -123,68 +111,53 @@ holded-mcp --timeout 60
 
 | Tool | Purpose |
 | --- | --- |
-| `holded_search_operations` | Search the bundled catalog by text, API version, Holded API, and tag. Returns operation summaries (including `version`) and pagination information; v2 operations are listed first. |
+| `holded_search_operations` | Search the bundled catalog by text, Holded API, and tag. Returns operation summaries and pagination information. |
 | `holded_get_operation` | Get the description and full input schema for an operation ID. |
 | `holded_read` | Execute a read operation with `operation_id`, `path_params`, and `query`. |
 | `holded_write` | Execute a mutating operation with the same arguments plus optional `body` or `files`. Omitted in read-only mode. |
 
-Discovery arguments are `search=""`, `version=null` (`"v1"` or `"v2"`), `api=null`, `tag=null`, `offset=0`, and `limit=20` (maximum 100). `api` is one of `accounting`, `treasury`, `sales`, `inventory`, `contacts`, `crm`, `projects`, `team`, `calendar`, `inbox`, and `developers` (v2), or `invoicing`, `crm`, `projects`, `team`, and `accounting` (v1); `crm`, `projects`, `team`, and `accounting` exist in both versions, so combine `api` with `version` to narrow results. `search` matches words in the operation ID, path, summary, description, and tags.
+Discovery arguments are `search=""`, `api=null`, `tag=null`, `offset=0`, and `limit=20` (maximum 100). `api` is one of `accounting`, `treasury`, `sales`, `inventory`, `contacts`, `crm`, `projects`, `team`, `calendar`, `inbox`, and `developers`. `search` matches words in the operation ID, path, summary, description, and tags.
 
-Operation IDs are case-sensitive:
+Operation IDs are the `operationId` values from Holded's specification and are case-sensitive, for example `list_invoices`, `create_invoice`, `find_invoices_by_document_number`, `list_contacts`, `create_contact`, `list_leads`, and `list_employees`.
 
-- v2: `v2_<operationId>` from Holded's specification, for example `v2_list_invoices`, `v2_create_invoice`, `v2_find_invoices_by_document_number`, `v2_list_contacts`, `v2_create_contact`, `v2_list_leads`, and `v2_list_employees`.
-- v1: `v1_<api>_<Name>`, for example `v1_invoicing_ListDocuments`, `v1_invoicing_CreateContact`, `v1_crm_ListLeads`, `v1_projects_ListTasks`, and `v1_accounting_ListDailyLedger`.
-
-Inspect an operation before calling it. Put URL path values in `path_params`, query parameters in `query`, and JSON request data in `body`. Omit unused arguments. A successful execution returns `{"status": <HTTP status>, "data": <API response>}`. Response shapes follow Holded's API. File downloads such as v2 PDFs and attachments return `data` as `{"content_type", "size", "content_base64"}` (up to 10 MiB).
+Inspect an operation before calling it. Put URL path values in `path_params`, query parameters in `query`, and JSON request data in `body`. Omit unused arguments. A successful execution returns `{"status": <HTTP status>, "data": <API response>}`. Response shapes follow Holded's API. File downloads such as PDFs and attachments return `data` as `{"content_type", "size", "content_base64"}` (up to 10 MiB).
 
 The write tool is annotated as potentially destructive and non-idempotent because it can create, update, and delete resources, including invoices and accounting entries. Your MCP client's approval settings control whether it asks before invoking a tool. The server does not retry requests automatically, including writes.
 
-### v2: list invoices, find one by number, and create a contact
+### Examples: list invoices, find one by number, and create a contact
 
 ```json
 {
-  "operation_id": "v2_list_invoices",
+  "operation_id": "list_invoices",
   "query": {"start_date": "2026-01-01", "end_date": "2026-01-31", "status": "outstanding", "limit": 50}
 }
 ```
 
-v2 list operations paginate with `limit` and `cursor`: when the response reports `has_more`, call the operation again with the returned `cursor`.
+List operations paginate with `limit` and `cursor`: when the response reports `has_more`, call the operation again with the returned `cursor`.
 
 ```json
 {
-  "operation_id": "v2_find_invoices_by_document_number",
+  "operation_id": "find_invoices_by_document_number",
   "query": {"document_number": "F260001"}
 }
 ```
 
 ```json
 {
-  "operation_id": "v2_create_contact",
+  "operation_id": "create_contact",
   "body": {"name": "Acme S.L.", "code": "B12345678", "email": "billing@acme.example", "type": "client"}
 }
 ```
 
-v2 dates are ISO 8601 strings (`2026-01-01` or `2026-01-01T00:00:00+00:00`), and v2 IDs are 24-character hexadecimal strings.
-
-### v1: list invoices
-
-```json
-{
-  "operation_id": "v1_invoicing_ListDocuments",
-  "path_params": {"docType": "invoice"},
-  "query": {"starttmp": "1767225600", "endtmp": "1769903999"}
-}
-```
-
-These are MCP tool argument examples, not shell commands. v1 dates such as `starttmp`, `endtmp`, `date`, and `dueDate` are Unix timestamps in seconds. `v1_invoicing_GetDocumentPDF` returns the PDF as base64 inside JSON.
+These are MCP tool argument examples, not shell commands. Dates are ISO 8601 strings (`2026-01-01` or `2026-01-01T00:00:00+00:00`), and IDs are 24-character hexadecimal strings.
 
 ### Attachments
 
-Upload operations (`v2_attach_invoice_file` and the other v2 `attach_*_file` operations, `v2_upload_product_image`, `v2_upload_inbox`, and `v1_invoicing_AttachFile`) accept `files`, an array of objects containing `field`, `filename`, `content_base64`, and `content_type`. `field` is the binary property in the operation's body schema (`file`, or `document` for `v2_upload_inbox`). Provide file bytes as base64; the server does not read local paths or download URLs. The combined decoded upload size is limited to **10 MiB**.
+Upload operations (`attach_invoice_file` and the other `attach_*_file` operations, `upload_product_image`, and `upload_inbox`) accept `files`, an array of objects containing `field`, `filename`, `content_base64`, and `content_type`. `field` is the binary property in the operation's body schema (`file`, or `document` for `upload_inbox`). Provide file bytes as base64; the server does not read local paths or download URLs. The combined decoded upload size is limited to **10 MiB**.
 
 ```json
 {
-  "operation_id": "v2_attach_invoice_file",
+  "operation_id": "attach_invoice_file",
   "path_params": {"invoiceId": "YOUR_24_CHARACTER_INVOICE_ID"},
   "files": [{
     "field": "file",
@@ -197,11 +170,9 @@ Upload operations (`v2_attach_invoice_file` and the other v2 `attach_*_file` ope
 
 ## API behavior and limitations
 
-The catalog is bundled with the package, so discovery does not depend on downloading API specifications at startup. It derives from Holded's official OpenAPI definitions (the v2 OpenAPI 3.1 document and the five v1 definitions, with copies committed under [`specs/`](specs)); see the [coverage document](docs/api-coverage.md) for sources, normalizations, and known gaps.
+The catalog is bundled with the package, so discovery does not depend on downloading API specifications at startup. It derives from Holded's official OpenAPI 3.1 definition (a copy is committed as [`specs/api2.json`](specs/api2.json)); see the [coverage document](docs/api-coverage.md) for the source, normalizations, and known gaps.
 
-Holded marks v1 as deprecated and in maintenance mode. It still works with the same key, but new integrations should use v2 operations.
-
-Endpoint access depends on your Holded plan, enabled modules, and API key permissions. v2 endpoints additionally require the permission scope named in each operation's description; a `403` usually means the key lacks it. A catalog entry does not guarantee that your account can call the endpoint.
+Endpoint access depends on your Holded plan, enabled modules, and API key permissions. Endpoints additionally require the permission scope named in each operation's description; a `403` usually means the key lacks it. A catalog entry does not guarantee that your account can call the endpoint.
 
 Holded applies rate limits per API key. A `429` response reports `Retry-After` when available. The server returns errors to the client without sleeping or retrying.
 
@@ -224,7 +195,7 @@ The checkout selects Python 3.12 through `.python-version`. The checked-in `uv.l
 | Symptom | Check |
 | --- | --- |
 | Missing API key at startup | Set `HOLDED_API_KEY` in the environment of the MCP client or its server configuration. |
-| Authentication or permission error | Check that the API key is current, that the Holded module is enabled for your account, and, for v2 operations, that the key has the scope listed in the operation's description. |
+| Authentication or permission error | Check that the API key is current, that the Holded module is enabled for your account, and that the key has the scope listed in the operation's description. |
 | Tool not found | Check that `uvx` is on the client's `PATH`, or configure its absolute path. |
 | Unknown operation or invalid arguments | Search the catalog, copy the exact ID, and inspect its input schema. |
 | No write tool | Remove `--read-only` if you intend to allow mutations. |

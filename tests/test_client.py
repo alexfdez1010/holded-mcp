@@ -10,7 +10,8 @@ import pytest
 from holded_mcp.client import MAX_DOWNLOAD_BYTES, MAX_UPLOAD_BYTES, HoldedClient, HoldedError
 
 API_KEY = "holded_test_key_do_not_expose_0123456789"
-DOC_TYPES = ["invoice", "salesreceipt", "creditnote", "estimate", "purchase", "proform"]
+OBJECT_ID = "5ab3a9e6d4c8a2001a1b2c3d"
+SERIES_TYPES = ["invoice", "salesreceipt", "creditnote", "estimate", "purchase", "proform"]
 
 
 def no_network():
@@ -27,10 +28,10 @@ def recording(requests, status=200, payload=None):
 
 
 def operation(method="GET", **overrides):
-    """A synthetic GET /api/invoicing/v1/contacts/{contactId}-style operation."""
+    """A synthetic operation on GET /api/v2/contacts/{contactId}."""
     result = {
         "method": method,
-        "path": "/api/invoicing/v1/contacts/{contactId}",
+        "path": "/api/v2/contacts/{contactId}",
         "parameters": [
             {"in": "path", "name": "contactId", "required": True, "schema": {"type": "string"}},
             {"in": "query", "name": "includeArchived", "schema": {"type": "boolean"}},
@@ -51,7 +52,7 @@ def operation(method="GET", **overrides):
 def list_contacts_operation():
     return {
         "method": "GET",
-        "path": "/api/invoicing/v1/contacts",
+        "path": "/api/v2/contacts",
         "parameters": [
             {"in": "query", "name": "phone", "schema": {"type": "string"}},
             {"in": "query", "name": "mobile", "schema": {"type": "string"}},
@@ -60,7 +61,7 @@ def list_contacts_operation():
                 "name": "customId",
                 "schema": {"type": "array", "items": {"type": "string"}},
             },
-            {"in": "query", "name": "page", "schema": {"type": "integer", "minimum": 1}},
+            {"in": "query", "name": "limit", "schema": {"type": "integer", "minimum": 1}},
         ],
         "body_schema": None,
         "body_required": False,
@@ -68,24 +69,17 @@ def list_contacts_operation():
     }
 
 
-def create_document_operation():
+def create_invoice_operation():
     return {
         "method": "POST",
-        "path": "/api/invoicing/v1/documents/{docType}",
-        "parameters": [
-            {
-                "in": "path",
-                "name": "docType",
-                "required": True,
-                "schema": {"type": "string", "enum": DOC_TYPES},
-            }
-        ],
+        "path": "/api/v2/invoices",
+        "parameters": [],
         "body_schema": {
             "type": "object",
-            "required": ["date"],
+            "required": ["contact_id"],
             "properties": {
-                "contactId": {"type": "string"},
-                "date": {"type": "integer"},
+                "contact_id": {"type": "string"},
+                "date": {"type": "string"},
                 "notes": {"type": "string", "nullable": True},
                 "items": {
                     "type": "array",
@@ -108,15 +102,14 @@ def create_document_operation():
 def attach_operation():
     return {
         "method": "POST",
-        "path": "/api/invoicing/v1/documents/{docType}/{documentId}/attach",
+        "path": "/api/v2/invoices/{invoiceId}/attachments",
         "parameters": [
             {
                 "in": "path",
-                "name": "docType",
+                "name": "invoiceId",
                 "required": True,
-                "schema": {"type": "string", "enum": DOC_TYPES},
+                "schema": {"type": "string", "pattern": "^[a-f0-9]{24}$"},
             },
-            {"in": "path", "name": "documentId", "required": True, "schema": {"type": "string"}},
         ],
         "body_schema": {
             "type": "object",
@@ -131,7 +124,7 @@ def attach_operation():
     }
 
 
-ATTACH_PATH = {"docType": "invoice", "documentId": "5ab3a9e6d4c8a2001a1b2c3d"}
+ATTACH_PATH = {"invoiceId": OBJECT_ID}
 
 
 def upload(**overrides):
@@ -162,105 +155,51 @@ def test_invalid_timeouts(timeout):
         HoldedClient(API_KEY, timeout=timeout)
 
 
-async def test_key_header_fixed_origin_json_result_and_context_manager():
+async def test_bearer_header_fixed_origin_json_result_and_context_manager():
     requests = []
     async with HoldedClient(API_KEY, transport=recording(requests, payload=[{"id": "c1"}])) as c:
         result = await c.request(list_contacts_operation())
     assert result == {"status": 200, "data": [{"id": "c1"}]}
     request = requests[0]
     assert request.method == "GET"
-    assert request.headers["key"] == API_KEY
-    assert "authorization" not in request.headers
+    assert request.headers.get_list("authorization") == [f"Bearer {API_KEY}"]
+    assert "key" not in request.headers
     assert request.headers["accept"] == "application/json, */*;q=0.8"
-    assert str(request.url) == "https://api.holded.com/api/invoicing/v1/contacts"
+    assert str(request.url) == "https://api.holded.com/api/v2/contacts"
     assert request.content == b""
     assert c._client.is_closed
 
 
-async def test_v2_operations_use_bearer_authorization_only():
+async def test_bearer_header_is_sent_exactly_once_on_every_request():
     requests = []
-    op = operation(path="/api/v2/contacts/{contactId}", version="v2")
     async with HoldedClient(API_KEY, transport=recording(requests)) as client:
-        await client.request(op, path_params={"contactId": "abc"}, query={"includeArchived": True})
-    request = requests[0]
-    assert str(request.url) == "https://api.holded.com/api/v2/contacts/abc?includeArchived=true"
-    assert request.headers["authorization"] == f"Bearer {API_KEY}"
-    assert "key" not in request.headers
-    assert request.headers["accept"] == "application/json, */*;q=0.8"
-
-
-async def test_auth_header_is_chosen_per_request_and_never_sent_twice():
-    requests = []
-    v1 = operation(version="v1")
-    v2 = operation(path="/api/v2/contacts/{contactId}")
-    async with HoldedClient(API_KEY, transport=recording(requests)) as client:
-        assert "key" not in client._client.headers
-        assert "authorization" not in client._client.headers
-        for op in (v2, v1, v2):
-            await client.request(op, path_params={"contactId": "abc"})
+        await client.request(operation(), path_params={"contactId": "abc"})
+        await client.request(create_invoice_operation(), body={"contact_id": "c"})
+        await client.request(attach_operation(), path_params=ATTACH_PATH, files=[upload()])
     assert [request.url.path for request in requests] == [
         "/api/v2/contacts/abc",
-        "/api/invoicing/v1/contacts/abc",
-        "/api/v2/contacts/abc",
+        "/api/v2/invoices",
+        f"/api/v2/invoices/{OBJECT_ID}/attachments",
     ]
     for request in requests:
-        auth = {name for name in ("key", "authorization") if name in request.headers}
-        assert len(auth) == 1
-        assert len(request.headers.get_list(auth.pop())) == 1
-    assert requests[0].headers["authorization"] == f"Bearer {API_KEY}"
-    assert requests[1].headers["key"] == API_KEY
-    assert "authorization" not in requests[1].headers
+        assert request.headers.get_list("authorization") == [f"Bearer {API_KEY}"]
+        assert "key" not in request.headers
 
 
-@pytest.mark.parametrize(
-    "version,path",
-    [("v1", "/api/v2/contacts/{contactId}"), ("v2", "/api/invoicing/v1/contacts/{contactId}")],
-)
-async def test_declared_version_must_match_path(version, path):
-    async with HoldedClient(API_KEY, transport=no_network()) as client:
-        with pytest.raises(HoldedError, match="version"):
-            await client.request(
-                operation(path=path, version=version), path_params={"contactId": "abc"}
-            )
-
-
-async def test_v2_errors_and_bodies_redact_the_bearer_key():
+async def test_errors_and_bodies_redact_the_bearer_key():
     requests = []
 
     def handler(request):
         requests.append(request)
         return httpx.Response(401, json={"detail": request.headers["authorization"]})
 
-    op = create_document_operation()
-    op["path"] = "/api/v2/documents/{docType}"
     async with HoldedClient(API_KEY, transport=httpx.MockTransport(handler)) as client:
         with pytest.raises(HoldedError) as exc:
-            await client.request(op, path_params={"docType": "invoice"}, body={"date": 1})
+            await client.request(create_invoice_operation(), body={"contact_id": "c"})
     assert API_KEY not in str(exc.value)
     assert "Bearer [REDACTED]" in str(exc.value)
     assert exc.value.status_code == 401
-    assert json.loads(requests[0].content) == {"date": 1}
-    assert "key" not in requests[0].headers
-
-
-async def test_v2_multipart_upload_uses_bearer():
-    requests = []
-    op = attach_operation()
-    op["path"] = "/api/v2/invoices/{docType}/{documentId}/attachments"
-    async with HoldedClient(API_KEY, transport=recording(requests)) as client:
-        await client.request(op, path_params=ATTACH_PATH, files=[upload()])
-    assert requests[0].headers["authorization"] == f"Bearer {API_KEY}"
-    assert "key" not in requests[0].headers
-    assert requests[0].headers["content-type"].startswith("multipart/form-data; boundary=")
-
-
-@pytest.mark.parametrize("api", ["invoicing", "crm", "projects", "team", "accounting"])
-async def test_every_documented_api_family_is_reachable(api):
-    requests = []
-    op = operation(path=f"/api/{api}/v1/items/{{contactId}}")
-    async with HoldedClient(API_KEY, transport=recording(requests)) as client:
-        await client.request(op, path_params={"contactId": "abc"})
-    assert str(requests[0].url) == f"https://api.holded.com/api/{api}/v1/items/abc"
+    assert json.loads(requests[0].content) == {"contact_id": "c"}
 
 
 @pytest.mark.parametrize(
@@ -273,7 +212,11 @@ async def test_binary_downloads_are_returned_as_base64(content_type):
     )
     async with HoldedClient(API_KEY, transport=transport) as client:
         result = await client.request(
-            operation(path="/api/v2/invoices/{contactId}/pdf"), path_params={"contactId": "a"}
+            operation(
+                path="/api/v2/invoices/{invoiceId}/pdf",
+                parameters=[{"in": "path", "name": "invoiceId", "schema": {"type": "string"}}],
+            ),
+            path_params={"invoiceId": OBJECT_ID},
         )
     assert result == {
         "status": 200,
@@ -426,19 +369,13 @@ async def test_configured_timeout_is_applied():
     "path",
     [
         "https://evil.invalid/",
-        "https://api.holded.com/api/invoicing/v1/contacts",
-        "//evil.invalid/api/invoicing/v1/contacts",
-        "/api/invoicing/v1/../contacts",
-        "/api/invoicing/v1/./contacts",
-        "/api/invoicing/v1//contacts",
-        "/api/invoicing/v1/contacts/",
-        "/api/invoicing/v1/",
-        "/api/invoicing/v1/contacts?foo=x",
-        "/api/invoicing/v1/contacts#frag",
-        "/api/invoicing/v1/contacts%2Fabc",
-        "/api/invoicing/v1/contacts\\x",
+        "https://api.holded.com/api/v2/contacts",
+        "//evil.invalid/api/v2/contacts",
+        "/api/v2/./contacts",
+        "/api/v2/contacts#frag",
+        "/api/v2/contacts\\x",
+        "/api/invoicing/contacts",
         "/api/invoicing/v2/contacts",
-        "/api/sales/v1/contacts",
         "/api/v3/contacts/{contactId}",
         "/api/v2/",
         "/api/v2",
@@ -449,11 +386,10 @@ async def test_configured_timeout_is_applied():
         "/api/v2/contacts%2F{contactId}",
         "/api/crm/v2/contacts",
         "/v2/contacts",
-        "/invoicing/v1/contacts",
-        "/api/invoicing/v1/{invalid!}",
-        "/api/invoicing/v1/contacts/{contactId",
-        "/api/invoicing/v1/contacts/contactId}",
-        "/api/invoicing/v1/contacts/{}",
+        "/api/v2/{invalid!}",
+        "/api/v2/contacts/{contactId",
+        "/api/v2/contacts/contactId}",
+        "/api/v2/contacts/{}",
         None,
         123,
     ],
@@ -471,7 +407,7 @@ async def test_unsupported_methods_rejected(method):
             await client.request(operation(method), path_params={"contactId": "abc"})
 
 
-@pytest.mark.parametrize("op", [None, [], "GET /api/invoicing/v1/contacts"])
+@pytest.mark.parametrize("op", [None, [], "GET /api/v2/contacts"])
 async def test_operation_must_be_an_object(op):
     async with HoldedClient(API_KEY, transport=no_network()) as client:
         with pytest.raises(HoldedError, match="Operation"):
@@ -512,7 +448,7 @@ async def test_path_identifiers_are_url_encoded():
     requests = []
     async with HoldedClient(API_KEY, transport=recording(requests)) as client:
         await client.request(operation(), path_params={"contactId": "Café con leche"})
-    assert requests[0].url.raw_path == b"/api/invoicing/v1/contacts/Caf%C3%A9%20con%20leche"
+    assert requests[0].url.raw_path == b"/api/v2/contacts/Caf%C3%A9%20con%20leche"
 
 
 async def test_integer_path_identifiers_accepted_and_digit_strings_kept_verbatim():
@@ -527,52 +463,65 @@ async def test_integer_path_identifiers_accepted_and_digit_strings_kept_verbatim
         with pytest.raises(HoldedError, match="path parameter contactId"):
             await client.request(op, path_params={"contactId": "abc"})
     assert [request.url.path for request in requests] == [
-        "/api/invoicing/v1/contacts/42",
-        "/api/invoicing/v1/contacts/007",
+        "/api/v2/contacts/42",
+        "/api/v2/contacts/007",
     ]
 
 
-async def test_doc_type_enum_is_enforced_before_network():
+async def test_path_enum_is_enforced_before_network():
+    op = operation(
+        "POST",
+        path="/api/v2/numbering-series/{type}",
+        parameters=[
+            {
+                "in": "path",
+                "name": "type",
+                "required": True,
+                "schema": {"type": "string", "enum": SERIES_TYPES},
+            }
+        ],
+    )
     async with HoldedClient(API_KEY, transport=no_network()) as client:
         with pytest.raises(HoldedError, match="enum") as exc:
+            await client.request(op, path_params={"type": API_KEY})
+    assert API_KEY not in str(exc.value)
+
+
+async def test_path_pattern_is_enforced_before_network():
+    async with HoldedClient(API_KEY, transport=no_network()) as client:
+        with pytest.raises(HoldedError, match="pattern") as exc:
             await client.request(
-                create_document_operation(),
-                path_params={"docType": API_KEY},
-                body={"date": 1767225600},
+                attach_operation(), path_params={"invoiceId": API_KEY}, files=[upload()]
             )
     assert API_KEY not in str(exc.value)
 
 
-async def test_create_document_sends_json_body():
+async def test_create_invoice_sends_json_body():
     requests = []
     body = {
-        "contactId": "5ab3a9e6d4c8a2001a1b2c3d",
-        "date": 1767225600,
+        "contact_id": OBJECT_ID,
+        "date": "2026-01-01",
         "notes": None,
         "items": [{"name": "Consultoría", "units": 2, "subtotal": 150.5}],
     }
-    payload = {"status": 1, "id": "65f0c0ffee", "invoiceNum": "F260001"}
+    payload = {"id": OBJECT_ID, "document_number": "F260001"}
     async with HoldedClient(API_KEY, transport=recording(requests, 201, payload)) as client:
-        result = await client.request(
-            create_document_operation(), path_params={"docType": "invoice"}, body=body
-        )
+        result = await client.request(create_invoice_operation(), body=body)
     assert result == {"status": 201, "data": payload}
     request = requests[0]
     assert request.method == "POST"
-    assert str(request.url) == "https://api.holded.com/api/invoicing/v1/documents/invoice"
+    assert str(request.url) == "https://api.holded.com/api/v2/invoices"
     assert request.headers["content-type"] == "application/json"
-    assert request.headers["key"] == API_KEY
+    assert request.headers["authorization"] == f"Bearer {API_KEY}"
     assert json.loads(request.content) == body
 
 
 async def test_non_finite_json_numbers_are_not_sent():
-    op = create_document_operation()
     async with HoldedClient(API_KEY, transport=no_network()) as client:
         with pytest.raises(HoldedError):
             await client.request(
-                op,
-                path_params={"docType": "invoice"},
-                body={"date": 1767225600, "items": [{"subtotal": float("nan")}]},
+                create_invoice_operation(),
+                body={"contact_id": "c", "items": [{"subtotal": float("nan")}]},
             )
 
 
@@ -581,12 +530,12 @@ async def test_list_contacts_query_serialization():
     async with HoldedClient(API_KEY, transport=recording(requests, payload=[])) as client:
         await client.request(
             list_contacts_operation(),
-            query={"phone": "+34 600 000 000", "customId": ["A-1", "B-2"], "page": 2},
+            query={"phone": "+34 600 000 000", "customId": ["A-1", "B-2"], "limit": 2},
         )
     params = requests[0].url.params
     assert params["phone"] == "+34 600 000 000"
     assert params.get_list("customId") == ["A-1", "B-2"]
-    assert params["page"] == "2"
+    assert params["limit"] == "2"
     assert "customId[]" not in params
 
 
@@ -614,23 +563,23 @@ async def test_invalid_arguments_never_reach_network(kwargs):
 
 
 async def test_required_query_and_body_validation():
-    op = create_document_operation()
-    op["body_schema"]["properties"]["dueDate"] = {"type": "integer", "minimum": 0}
+    op = create_invoice_operation()
+    op["body_schema"]["properties"]["due_days"] = {"type": "integer", "minimum": 0}
     op["parameters"].append(
-        {"in": "query", "name": "page", "required": True, "schema": {"type": "integer"}}
+        {"in": "query", "name": "limit", "required": True, "schema": {"type": "integer"}}
     )
     async with HoldedClient(API_KEY, transport=no_network()) as client:
         for kwargs in (
             {},
-            {"query": {"page": 1}},
-            {"query": {"page": 1}, "body": {}},
-            {"query": {"page": 1}, "body": "date=1"},
-            {"query": {"page": 1}, "body": {"date": API_KEY}},
-            {"query": {"page": 1}, "body": {"date": 1, "dueDate": -5}},
-            {"query": {"page": True}, "body": {"date": 1}},
+            {"query": {"limit": 1}},
+            {"query": {"limit": 1}, "body": {}},
+            {"query": {"limit": 1}, "body": "contact_id=c"},
+            {"query": {"limit": 1}, "body": {"contact_id": "c", "items": API_KEY}},
+            {"query": {"limit": 1}, "body": {"contact_id": "c", "due_days": -5}},
+            {"query": {"limit": True}, "body": {"contact_id": "c"}},
         ):
             with pytest.raises(HoldedError) as exc:
-                await client.request(op, path_params={"docType": "invoice"}, **kwargs)
+                await client.request(op, **kwargs)
             assert API_KEY not in str(exc.value)
 
 
@@ -638,9 +587,8 @@ async def test_validation_errors_report_location_not_values():
     async with HoldedClient(API_KEY, transport=no_network()) as client:
         with pytest.raises(HoldedError) as exc:
             await client.request(
-                create_document_operation(),
-                path_params={"docType": "invoice"},
-                body={"date": 1, "items": [{"name": "secret-value", "units": -1}]},
+                create_invoice_operation(),
+                body={"contact_id": "c", "items": [{"name": "secret-value", "units": -1}]},
             )
     assert "items.0.units" in str(exc.value)
     assert "minimum" in str(exc.value)
@@ -652,20 +600,22 @@ async def test_validation_errors_report_location_not_values():
     [({"type": "not-a-type"}, 1), ({"type": "string", "pattern": "("}, "x"), ({"minimum": "a"}, 1)],
 )
 async def test_broken_documented_schema_is_reported_safely(date_schema, date):
-    op = create_document_operation()
+    op = create_invoice_operation()
     op["body_schema"] = {"type": "object", "properties": {"date": date_schema}}
     async with HoldedClient(API_KEY, transport=no_network()) as client:
         with pytest.raises(HoldedError, match="Cannot validate"):
-            await client.request(op, path_params={"docType": "invoice"}, body={"date": date})
+            await client.request(op, body={"date": date})
 
 
 async def test_json_body_preserves_nested_types_and_allows_incomplete_schema_fields():
     requests = []
-    body = {"date": 1, "approveDoc": False, "customFields": [{"field": "x", "value": [1, None]}]}
+    body = {
+        "contact_id": "c",
+        "approve": False,
+        "custom_fields": [{"field": "x", "value": [1, None]}],
+    }
     async with HoldedClient(API_KEY, transport=recording(requests, 201)) as client:
-        await client.request(
-            create_document_operation(), path_params={"docType": "estimate"}, body=body
-        )
+        await client.request(create_invoice_operation(), body=body)
     assert json.loads(requests[0].content) == body
     assert requests[0].headers["content-type"] == "application/json"
 
@@ -704,7 +654,7 @@ async def test_query_booleans_styles_and_deep_objects():
             },
             {"in": "query", "name": "pipes", "schema": {"type": "array"}, "style": "pipeDelimited"},
             {"in": "query", "name": "filter", "schema": {"type": "object"}, "style": "deepObject"},
-            {"in": "query", "name": "starttmp", "schema": {"type": "integer"}},
+            {"in": "query", "name": "limit", "schema": {"type": "integer"}},
             {"in": "query", "name": "missing", "schema": {"type": "string", "nullable": True}},
         ]
     )
@@ -721,7 +671,7 @@ async def test_query_booleans_styles_and_deep_objects():
                 "spaces": [1, 2],
                 "pipes": [1, 2],
                 "filter": {"active": True},
-                "starttmp": 1767225600,
+                "limit": 50,
                 "missing": None,
             },
         )
@@ -733,7 +683,7 @@ async def test_query_booleans_styles_and_deep_objects():
     assert params["spaces"] == "1 2"
     assert params["pipes"] == "1|2"
     assert params["filter[active]"] == "true"
-    assert params["starttmp"] == "1767225600"
+    assert params["limit"] == "50"
     assert params["missing"] == "null"
 
 
@@ -773,11 +723,9 @@ async def test_multipart_attach_uses_field_name_as_is_with_metadata():
             original, path_params=ATTACH_PATH, body={"setMain": False}, files=[upload()]
         )
     request = requests[0]
-    assert str(request.url) == (
-        "https://api.holded.com/api/invoicing/v1/documents/invoice/5ab3a9e6d4c8a2001a1b2c3d/attach"
-    )
+    assert str(request.url) == f"https://api.holded.com/api/v2/invoices/{OBJECT_ID}/attachments"
     assert request.headers["content-type"].startswith("multipart/form-data; boundary=")
-    assert request.headers["key"] == API_KEY
+    assert request.headers["authorization"] == f"Bearer {API_KEY}"
     assert b'name="file"; filename="invoice.pdf"' in request.content
     assert b"Content-Type: application/pdf" in request.content
     assert b"%PDF-1.4 hello" in request.content

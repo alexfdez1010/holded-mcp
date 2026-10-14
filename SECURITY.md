@@ -2,7 +2,7 @@
 
 ## Credential handling
 
-Run this local server with your own Holded API key in `HOLDED_API_KEY`. The API key grants the permissions of its Holded account; the server does not narrow those permissions beyond the optional `--read-only` mode. v2 endpoints also check the key's permission scopes, so grant only the scopes you need. The server sends the key only to `https://api.holded.com`, in exactly one header per request: `Authorization: Bearer` for v2 operations or `key` for v1 operations.
+Run this local server with your own Holded API key in `HOLDED_API_KEY`. The API key grants the permissions of its Holded account; the server does not narrow those permissions beyond the optional `--read-only` mode. Endpoints also check the key's permission scopes, so grant only the scopes you need. The server sends the key only to `https://api.holded.com`, as `Authorization: Bearer <key>`.
 
 - Keep real API keys out of source control, issue reports, screenshots, shell history, and shared client configuration.
 - Prefer your MCP client's secret storage or inherited environment support when available.
