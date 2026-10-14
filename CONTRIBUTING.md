@@ -31,16 +31,18 @@ When manually running the server, provide `HOLDED_API_KEY` in the environment an
 
 ## Update the API catalog
 
-The catalog is generated from Holded's official public API specifications. Regenerate it using:
+The catalog is generated from Holded's official public API specifications: the v2 OpenAPI 3.1 document (`https://api.holded.com/openapi/api2.json`) and the five v1 definitions in ReadMe's API registry. Copies of these inputs are committed under `specs/` (`specs/v2/api2.json` and `specs/v1/<api>.json`, minified JSON). Fetch the current definitions, refresh `specs/`, and regenerate the catalog and coverage document using:
 
 ```sh
 uv run python scripts/update_catalog.py --snapshot-date YYYY-MM-DD
 uv run pytest
 ```
 
-Replace `YYYY-MM-DD` with the date you fetch the source specifications. The generated coverage document records the same snapshot date.
+Replace `YYYY-MM-DD` with the date you fetch the source specifications. The generated coverage document records the same snapshot date. To rebuild offline from the committed copies (for example after changing the generator), add `--from-specs`. To use other local snapshots, pass `--v2 PATH` and/or `--invoicing`, `--crm`, `--projects`, `--team`, `--accounting`; they are copied into `specs/`. Add `--verify-docs` to check every `doc_url` against Holded's reference pages (network access required).
 
-Review the generated changes before committing. Verify operation counts, IDs, methods, paths, required parameters, request schemas, multipart handling, and exclusions. Update [api-coverage.md](docs/api-coverage.md) and README counts when coverage changes. Discovery must continue to work from the bundled catalog without network access at startup.
+`tests/test_catalog.py` rebuilds the catalog from `specs/` and fails if it differs from the packaged `operations.json`, so commit the specs, catalog, and coverage document together.
+
+Review the generated changes before committing. Verify operation counts per version and API, IDs, methods, paths, required parameters, request schemas, multipart handling, and exclusions. Update README counts when coverage changes. If Holded adds a v2 tag group, map it in `V2_TAG_GROUPS`; if it republishes a v1 definition under a new registry id, update `REGISTRY_IDS`. Discovery must continue to work from the bundled catalog without network access at startup.
 
 Holded's published schemas can be incomplete. Document narrowly scoped fixes and their official sources. Do not silently invent fields or claim endpoint support beyond what the transport and schema validation can handle.
 

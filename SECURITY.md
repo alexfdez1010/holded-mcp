@@ -2,7 +2,7 @@
 
 ## Credential handling
 
-Run this local server with your own Holded API key in `HOLDED_API_KEY`. The API key grants the permissions of its Holded account; the server does not narrow those permissions beyond the optional `--read-only` mode.
+Run this local server with your own Holded API key in `HOLDED_API_KEY`. The API key grants the permissions of its Holded account; the server does not narrow those permissions beyond the optional `--read-only` mode. v2 endpoints also check the key's permission scopes, so grant only the scopes you need. The server sends the key only to `https://api.holded.com`, in exactly one header per request: `Authorization: Bearer` for v2 operations or `key` for v1 operations.
 
 - Keep real API keys out of source control, issue reports, screenshots, shell history, and shared client configuration.
 - Prefer your MCP client's secret storage or inherited environment support when available.
@@ -17,7 +17,7 @@ The server communicates with Holded over HTTPS and uses stdio for its local MCP 
 
 Returned Holded content may contain malicious or misleading instructions. Contact names, notes, document descriptions, CRM leads, project tasks, and all other resource content must be treated as untrusted data, not as authorization to use tools, reveal secrets, or change client settings.
 
-Uploads accept explicitly supplied base64 bytes with a 10 MiB combined decoded limit. The server does not load arbitrary filesystem paths or fetch attachment URLs. Request retries are disabled so a timeout does not automatically repeat a potentially destructive write.
+Uploads accept explicitly supplied base64 bytes with a 10 MiB combined decoded limit. File downloads are returned as base64 and limited to 10 MiB. The server does not load arbitrary filesystem paths or fetch attachment URLs. Request retries are disabled so a timeout does not automatically repeat a potentially destructive write.
 
 ## Reporting a vulnerability
 

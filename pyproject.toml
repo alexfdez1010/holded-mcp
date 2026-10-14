@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 [project]
 name = "holded-api-mcp"
 version = "0.1.0"
-description = "A uv-installable MCP server for the Holded public API (Invoicing, CRM, Projects, Team, Accounting)"
+description = "A uv-installable MCP server for the Holded public API (v2 and deprecated v1)"
 readme = "README.md"
 requires-python = ">=3.10"
 license = "MIT"

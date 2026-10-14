@@ -7,7 +7,7 @@ import json
 import httpx
 import pytest
 
-from holded_mcp.client import MAX_UPLOAD_BYTES, HoldedClient, HoldedError
+from holded_mcp.client import MAX_DOWNLOAD_BYTES, MAX_UPLOAD_BYTES, HoldedClient, HoldedError
 
 API_KEY = "holded_test_key_do_not_expose_0123456789"
 DOC_TYPES = ["invoice", "salesreceipt", "creditnote", "estimate", "purchase", "proform"]
@@ -171,10 +171,87 @@ async def test_key_header_fixed_origin_json_result_and_context_manager():
     assert request.method == "GET"
     assert request.headers["key"] == API_KEY
     assert "authorization" not in request.headers
-    assert request.headers["accept"] == "application/json"
+    assert request.headers["accept"] == "application/json, */*;q=0.8"
     assert str(request.url) == "https://api.holded.com/api/invoicing/v1/contacts"
     assert request.content == b""
     assert c._client.is_closed
+
+
+async def test_v2_operations_use_bearer_authorization_only():
+    requests = []
+    op = operation(path="/api/v2/contacts/{contactId}", version="v2")
+    async with HoldedClient(API_KEY, transport=recording(requests)) as client:
+        await client.request(op, path_params={"contactId": "abc"}, query={"includeArchived": True})
+    request = requests[0]
+    assert str(request.url) == "https://api.holded.com/api/v2/contacts/abc?includeArchived=true"
+    assert request.headers["authorization"] == f"Bearer {API_KEY}"
+    assert "key" not in request.headers
+    assert request.headers["accept"] == "application/json, */*;q=0.8"
+
+
+async def test_auth_header_is_chosen_per_request_and_never_sent_twice():
+    requests = []
+    v1 = operation(version="v1")
+    v2 = operation(path="/api/v2/contacts/{contactId}")
+    async with HoldedClient(API_KEY, transport=recording(requests)) as client:
+        assert "key" not in client._client.headers
+        assert "authorization" not in client._client.headers
+        for op in (v2, v1, v2):
+            await client.request(op, path_params={"contactId": "abc"})
+    assert [request.url.path for request in requests] == [
+        "/api/v2/contacts/abc",
+        "/api/invoicing/v1/contacts/abc",
+        "/api/v2/contacts/abc",
+    ]
+    for request in requests:
+        auth = {name for name in ("key", "authorization") if name in request.headers}
+        assert len(auth) == 1
+        assert len(request.headers.get_list(auth.pop())) == 1
+    assert requests[0].headers["authorization"] == f"Bearer {API_KEY}"
+    assert requests[1].headers["key"] == API_KEY
+    assert "authorization" not in requests[1].headers
+
+
+@pytest.mark.parametrize(
+    "version,path",
+    [("v1", "/api/v2/contacts/{contactId}"), ("v2", "/api/invoicing/v1/contacts/{contactId}")],
+)
+async def test_declared_version_must_match_path(version, path):
+    async with HoldedClient(API_KEY, transport=no_network()) as client:
+        with pytest.raises(HoldedError, match="version"):
+            await client.request(
+                operation(path=path, version=version), path_params={"contactId": "abc"}
+            )
+
+
+async def test_v2_errors_and_bodies_redact_the_bearer_key():
+    requests = []
+
+    def handler(request):
+        requests.append(request)
+        return httpx.Response(401, json={"detail": request.headers["authorization"]})
+
+    op = create_document_operation()
+    op["path"] = "/api/v2/documents/{docType}"
+    async with HoldedClient(API_KEY, transport=httpx.MockTransport(handler)) as client:
+        with pytest.raises(HoldedError) as exc:
+            await client.request(op, path_params={"docType": "invoice"}, body={"date": 1})
+    assert API_KEY not in str(exc.value)
+    assert "Bearer [REDACTED]" in str(exc.value)
+    assert exc.value.status_code == 401
+    assert json.loads(requests[0].content) == {"date": 1}
+    assert "key" not in requests[0].headers
+
+
+async def test_v2_multipart_upload_uses_bearer():
+    requests = []
+    op = attach_operation()
+    op["path"] = "/api/v2/invoices/{docType}/{documentId}/attachments"
+    async with HoldedClient(API_KEY, transport=recording(requests)) as client:
+        await client.request(op, path_params=ATTACH_PATH, files=[upload()])
+    assert requests[0].headers["authorization"] == f"Bearer {API_KEY}"
+    assert "key" not in requests[0].headers
+    assert requests[0].headers["content-type"].startswith("multipart/form-data; boundary=")
 
 
 @pytest.mark.parametrize("api", ["invoicing", "crm", "projects", "team", "accounting"])
@@ -184,6 +261,52 @@ async def test_every_documented_api_family_is_reachable(api):
     async with HoldedClient(API_KEY, transport=recording(requests)) as client:
         await client.request(op, path_params={"contactId": "abc"})
     assert str(requests[0].url) == f"https://api.holded.com/api/{api}/v1/items/abc"
+
+
+@pytest.mark.parametrize(
+    "content_type", ["application/pdf", "application/octet-stream", "image/png; charset=binary"]
+)
+async def test_binary_downloads_are_returned_as_base64(content_type):
+    payload = b"%PDF-1.7\x00\xff\xfe binary"
+    transport = httpx.MockTransport(
+        lambda _: httpx.Response(200, content=payload, headers={"Content-Type": content_type})
+    )
+    async with HoldedClient(API_KEY, transport=transport) as client:
+        result = await client.request(
+            operation(path="/api/v2/invoices/{contactId}/pdf"), path_params={"contactId": "a"}
+        )
+    assert result == {
+        "status": 200,
+        "data": {
+            "content_type": content_type.split(";")[0],
+            "size": len(payload),
+            "content_base64": base64.b64encode(payload).decode(),
+        },
+    }
+
+
+async def test_oversized_binary_downloads_are_rejected():
+    transport = httpx.MockTransport(
+        lambda _: httpx.Response(
+            200,
+            content=b"0" * (MAX_DOWNLOAD_BYTES + 1),
+            headers={"Content-Type": "application/pdf"},
+        )
+    )
+    async with HoldedClient(API_KEY, transport=transport) as client:
+        with pytest.raises(HoldedError, match="10 MiB"):
+            await client.request(operation(), path_params={"contactId": "a"})
+
+
+@pytest.mark.parametrize("content_type", ["application/problem+json", "text/plain", ""])
+async def test_json_and_text_responses_are_not_treated_as_files(content_type):
+    headers = {"Content-Type": content_type} if content_type else {}
+    transport = httpx.MockTransport(
+        lambda _: httpx.Response(200, content=b'{"a": 1}', headers=headers)
+    )
+    async with HoldedClient(API_KEY, transport=transport) as client:
+        result = await client.request(operation(), path_params={"contactId": "a"})
+    assert result["data"] == {"a": 1}
 
 
 async def test_proxy_environment_ignored(monkeypatch):
@@ -316,7 +439,16 @@ async def test_configured_timeout_is_applied():
         "/api/invoicing/v1/contacts\\x",
         "/api/invoicing/v2/contacts",
         "/api/sales/v1/contacts",
-        "/api/v2/task/{contactId}",
+        "/api/v3/contacts/{contactId}",
+        "/api/v2/",
+        "/api/v2",
+        "/api/v2/../contacts",
+        "/api/v2//contacts",
+        "/api/v2/contacts/",
+        "/api/v2/contacts?x=1",
+        "/api/v2/contacts%2F{contactId}",
+        "/api/crm/v2/contacts",
+        "/v2/contacts",
         "/invoicing/v1/contacts",
         "/api/invoicing/v1/{invalid!}",
         "/api/invoicing/v1/contacts/{contactId",
