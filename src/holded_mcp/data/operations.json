@@ -1,0 +1,5817 @@
+{
+  "accounting_CreateAccount": {
+    "operation_id": "accounting_CreateAccount",
+    "api": "accounting",
+    "method": "POST",
+    "path": "/api/accounting/v1/account",
+    "summary": "Create a new accounting account",
+    "description": "Create a new accounting account\n",
+    "tags": [
+      "Chart of Accounts"
+    ],
+    "parameters": [],
+    "body_schema": {
+      "type": "object",
+      "properties": {
+        "prefix": {
+          "type": "integer",
+          "description": "4 digit prefix of the account to be created"
+        },
+        "name": {
+          "type": "string",
+          "description": "Name of the account to be created (falls back to parent account name if empty)"
+        },
+        "color": {
+          "type": "string",
+          "description": "Hex code"
+        }
+      },
+      "required": [
+        "prefix"
+      ]
+    },
+    "body_required": false,
+    "content_type": "application/json",
+    "deprecated": false,
+    "doc_url": "https://www.holded.com/developers/v1/accounting-api/chart-of-accounts/createaccount"
+  },
+  "accounting_CreateEntry": {
+    "operation_id": "accounting_CreateEntry",
+    "api": "accounting",
+    "method": "POST",
+    "path": "/api/accounting/v1/entry",
+    "summary": "Create entry",
+    "description": "Create a new accounting entry\n",
+    "tags": [
+      "Daily Ledger"
+    ],
+    "parameters": [],
+    "body_schema": {
+      "type": "object",
+      "properties": {
+        "date": {
+          "type": "integer",
+          "description": "Timestamp for entry date"
+        },
+        "lines": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "account": {
+                "type": "integer",
+                "description": "Account number for this entry line"
+              },
+              "credit": {
+                "type": "number"
+              },
+              "debit": {
+                "type": "number"
+              },
+              "description": {
+                "type": "string"
+              },
+              "tags": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "required": [
+              "account"
+            ]
+          }
+        },
+        "notes": {
+          "type": "string",
+          "description": "Entry Note"
+        }
+      },
+      "required": [
+        "date",
+        "lines"
+      ]
+    },
+    "body_required": false,
+    "content_type": "application/json",
+    "deprecated": false,
+    "doc_url": "https://www.holded.com/developers/v1/accounting-api/daily-ledger/createentry"
+  },
+  "accounting_ListAccounts": {
+    "operation_id": "accounting_ListAccounts",
+    "api": "accounting",
+    "method": "GET",
+    "path": "/api/accounting/v1/chartofaccounts",
+    "summary": "List all your accounting accounts",
+    "description": "List all your accounting accounts.\n",
+    "tags": [
+      "Chart of Accounts"
+    ],
+    "parameters": [
+      {
+        "name": "starttmp",
+        "in": "query",
+        "description": "Starting timestamp",
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "endtmp",
+        "in": "query",
+        "description": "Ending timestamp",
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "includeEmpty",
+        "in": "query",
+        "description": "Include Empty accounts (0: no include empty, 1: include empty)",
+        "required": false,
+        "schema": {
+          "type": "number",
+          "enum": [
+            0,
+            1
+          ]
+        }
+      }
+    ],
+    "body_schema": null,
+    "body_required": false,
+    "content_type": null,
+    "deprecated": false,
+    "doc_url": "https://www.holded.com/developers/v1/accounting-api/chart-of-accounts/listaccounts"
+  },
+  "accounting_ListDailyLedger": {
+    "operation_id": "accounting_ListDailyLedger",
+    "api": "accounting",
+    "method": "GET",
+    "path": "/api/accounting/v1/dailyledger",
+    "summary": "List all your entries",
+    "description": "List all the entries you have in your daily ledger.\n",
+    "tags": [
+      "Daily Ledger"
+    ],
+    "parameters": [
+      {
+        "in": "query",
+        "name": "page",
+        "description": "the response is paginated and limited to 500 entries,",
+        "required": false,
+        "schema": {
+          "type": "number"
+        }
+      },
+      {
+        "name": "starttmp",
+        "in": "query",
+        "description": "Starting timestamp",
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "endtmp",
+        "in": "query",
+        "description": "Ending timestamp",
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "body_schema": null,
+    "body_required": false,
+    "content_type": null,
+    "deprecated": false,
+    "doc_url": "https://www.holded.com/developers/v1/accounting-api/daily-ledger/listdailyledger"
+  },
+  "crm_CancelBooking": {
+    "operation_id": "crm_CancelBooking",
+    "api": "crm",
+    "method": "DELETE",
+    "path": "/api/crm/v1/bookings/{bookingId}",
+    "summary": "Cancel Booking",
+    "description": "Cancel a specific booking.",
+    "tags": [
+      "BOOKINGS"
+    ],
+    "parameters": [
+      {
+        "name": "bookingId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": ""
+      }
+    ],
+    "body_schema": null,
+    "body_required": false,
+    "content_type": null,
+    "deprecated": false,
+    "doc_url": "https://www.holded.com/developers/v1/crm-api/bookings/cancel-booking"
+  },
+  "crm_CreateBooking": {
+    "operation_id": "crm_CreateBooking",
+    "api": "crm",
+    "method": "POST",
+    "path": "/api/crm/v1/bookings",
+    "summary": "Create Booking",
+    "description": "Create new booking.",
+    "tags": [
+      "BOOKINGS"
+    ],
+    "parameters": [],
+    "body_schema": {
+      "type": "object",
+      "properties": {
+        "locationId": {
+          "type": "string"
+        },
+        "serviceId": {
+          "type": "string"
+        },
+        "dateTime": {
+          "type": "integer"
+        },
+        "timezone": {
+          "type": "string"
+        },
+        "language": {
+          "type": "string"
+        },
+        "customFields": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "key": {
+                "type": "string"
+              },
+              "value": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
+      "required": [
+        "locationId",
+        "serviceId",
+        "dateTime",
+        "timezone",
+        "language",
+        "customFields"
+      ]
+    },
+    "body_required": false,
+    "content_type": "application/json",
+    "deprecated": false,
+    "doc_url": "https://www.holded.com/developers/v1/crm-api/bookings/create-booking"
+  },
+  "crm_CreateEvent": {
+    "operation_id": "crm_CreateEvent",
+    "api": "crm",
+    "method": "POST",
+    "path": "/api/crm/v1/events",
+    "summary": "Create Event",
+    "description": "Create a new event.",
+    "tags": [
+      "EVENTS"
+    ],
+    "parameters": [],
+    "body_schema": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "contactId": {
+          "type": "string"
+        },
+        "contactName": {
+          "type": "string"
+        },
+        "kind": {
+          "type": "string"
+        },
+        "desc": {
+          "type": "string"
+        },
+        "startDate": {
+          "type": "integer"
+        },
+        "duration": {
+          "type": "integer"
+        },
+        "status": {
+          "type": "integer"
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "locationDesc": {
+          "type": "string"
+        },
+        "leadId": {
+          "type": "string"
+        },
+        "funnelId": {
+          "type": "string"
+        },
+        "userId": {
+          "type": "string"
+        }
+      }
+    },
+    "body_required": false,
+    "content_type": "application/json",
+    "deprecated": false,
+    "doc_url": "https://www.holded.com/developers/v1/crm-api/events/create-event"
+  },
+  "crm_CreateFunnel": {
+    "operation_id": "crm_CreateFunnel",
+    "api": "crm",
+    "method": "POST",
+    "path": "/api/crm/v1/funnels",
+    "summary": "Create Funnel",
+    "description": "Create a new funnel.",
+    "tags": [
+      "FUNNELS"
+    ],
+    "parameters": [],
+    "body_schema": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "name"
+      ]
+    },
+    "body_required": false,
+    "content_type": "application/json",
+    "deprecated": false,
+    "doc_url": "https://www.holded.com/developers/v1/crm-api/funnels/create-funnel"
+  },
+  "crm_CreateLead": {
+    "operation_id": "crm_CreateLead",
+    "api": "crm",
+    "method": "POST",
+    "path": "/api/crm/v1/leads",
+    "summary": "Create Lead",
+    "description": "Create a new lead.",
+    "tags": [
+      "LEADS"
+    ],
+    "parameters": [],
+    "body_schema": {
+      "type": "object",
+      "properties": {
+        "funnelId": {
+          "type": "string"
+        },
+        "contactId": {
+          "type": "string"
+        },
+        "contactName": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "value": {
+          "type": "integer"
+        },
+        "potential": {
+          "type": "integer"
+        },
+        "dueDate": {
+          "type": "integer"
+        },
+        "stageId": {
+          "type": "string",
+          "description": "Either Stage ID or exact name are accepted. In the latter case, if there are multiple matches the oldest stage created will be selected."
+        }
+      }
+    },
+    "body_required": false,
+    "content_type": "application/json",
+    "deprecated": false,
+    "doc_url": "https://www.holded.com/developers/v1/crm-api/leads/create-lead"
+  },
+  "crm_CreateLeadNote": {
+    "operation_id": "crm_CreateLeadNote",
+    "api": "crm",
+    "method": "POST",
+    "path": "/api/crm/v1/leads/{leadId}/notes",
+    "summary": "Create Lead Note",
+    "description": "Create a new lead note.",
+    "tags": [
+      "LEADS"
+    ],
+    "parameters": [
+      {
+        "name": "leadId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": ""
+      }
+    ],
+    "body_schema": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "desc": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "title"
+      ]
+    },
+    "body_required": false,
+    "content_type": "application/json",
+    "deprecated": false,
+    "doc_url": "https://www.holded.com/developers/v1/crm-api/leads/create-lead-note"
+  },
+  "crm_CreateLeadTask": {
+    "operation_id": "crm_CreateLeadTask",
+    "api": "crm",
+    "method": "POST",
+    "path": "/api/crm/v1/leads/{leadId}/tasks",
+    "summary": "Create Lead Task",
+    "description": "Create a new lead task.",
+    "tags": [
+      "LEADS"
+    ],
+    "parameters": [
+      {
+        "name": "leadId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": ""
+      }
+    ],
+    "body_schema": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        }
+      }
+    },
+    "body_required": false,
+    "content_type": "application/json",
+    "deprecated": false,
+    "doc_url": "https://www.holded.com/developers/v1/crm-api/leads/create-lead-task"
+  },
+  "crm_DeleteEvent": {
+    "operation_id": "crm_DeleteEvent",
+    "api": "crm",
+    "method": "DELETE",
+    "path": "/api/crm/v1/events/{eventId}",
+    "summary": "Delete Event",
+    "description": "Delete a specific event.",
+    "tags": [
+      "EVENTS"
+    ],
+    "parameters": [
+      {
+        "name": "eventId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": ""
+      }
+    ],
+    "body_schema": null,
+    "body_required": false,
+    "content_type": null,
+    "deprecated": false,
+    "doc_url": "https://www.holded.com/developers/v1/crm-api/events/delete-event"
+  },
+  "crm_DeleteFunnel": {
+    "operation_id": "crm_DeleteFunnel",
+    "api": "crm",
+    "method": "DELETE",
+    "path": "/api/crm/v1/funnels/{funnelId}",
+    "summary": "Delete Funnel",
+    "description": "Delete a specific funnel.",
+    "tags": [
+      "FUNNELS"
+    ],
+    "parameters": [
+      {
+        "name": "funnelId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": ""
+      }
+    ],
+    "body_schema": null,
+    "body_required": false,
+    "content_type": null,
+    "deprecated": false,
+    "doc_url": "https://www.holded.com/developers/v1/crm-api/funnels/delete-funnel"
+  },
+  "crm_DeleteLead": {
+    "operation_id": "crm_DeleteLead",
+    "api": "crm",
+    "method": "DELETE",
+    "path": "/api/crm/v1/leads/{leadId}",
+    "summary": "Delete Lead",
+    "description": "Delete a specific lead.",
+    "tags": [
+      "LEADS"
+    ],
+    "parameters": [
+      {
+        "name": "leadId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": ""
+      }
+    ],
+    "body_schema": null,
+    "body_required": false,
+    "content_type": null,
+    "deprecated": false,
+    "doc_url": "https://www.holded.com/developers/v1/crm-api/leads/delete-lead"
+  },
+  "crm_DeleteLeadTask": {
+    "operation_id": "crm_DeleteLeadTask",
+    "api": "crm",
+    "method": "DELETE",
+    "path": "/api/crm/v1/leads/{leadId}/tasks",
+    "summary": "Delete Lead Task",
+    "description": "Delete a specific lead task.",
+    "tags": [
+      "LEADS"
+    ],
+    "parameters": [
+      {
+        "name": "leadId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": ""
+      }
+    ],
+    "body_schema": {
+      "type": "object",
+      "properties": {
+        "taskId": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "taskId"
+      ]
+    },
+    "body_required": false,
+    "content_type": "application/json",
+    "deprecated": false,
+    "doc_url": "https://www.holded.com/developers/v1/crm-api/leads/delete-lead-task"
+  },
+  "crm_GetAvailableSlotsForLocation": {
+    "operation_id": "crm_GetAvailableSlotsForLocation",
+    "api": "crm",
+    "method": "GET",
+    "path": "/api/crm/v1/bookings/locations/{locationId}/slots",
+    "summary": "Get available slots for location",
+    "description": "Get a list of available time slots for a location, specifying a service and a date.",
+    "tags": [
+      "BOOKINGS"
+    ],
+    "parameters": [
+      {
+        "name": "locationId",
+        "in": "path",
+        "required": true,
+        "description": "Specific location ID",
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "serviceId",
+        "in": "query",
+        "required": true,
+        "description": "Specific service ID",
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "day",
+        "in": "query",
+        "required": true,
+        "description": "Specific day (yyyy-mm-dd)",
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "body_schema": null,
+    "body_required": false,
+    "content_type": null,
+    "deprecated": false,
+    "doc_url": "https://www.holded.com/developers/v1/crm-api/bookings/get-available-slots-for-location"
+  },
+  "crm_GetBooking": {
+    "operation_id": "crm_GetBooking",
+    "api": "crm",
+    "method": "GET",
+    "path": "/api/crm/v1/bookings/{bookingId}",
+    "summary": "Get Booking",
+    "description": "Get a specific booking.",
+    "tags": [
+      "BOOKINGS"
+    ],
+    "parameters": [
+      {
+        "name": "bookingId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": ""
+      }
+    ],
+    "body_schema": null,
+    "body_required": false,
+    "content_type": null,
+    "deprecated": false,
+    "doc_url": "https://www.holded.com/developers/v1/crm-api/bookings/get-booking"
+  },
+  "crm_GetEvent": {
+    "operation_id": "crm_GetEvent",
+    "api": "crm",
+    "method": "GET",
+    "path": "/api/crm/v1/events/{eventId}",
+    "summary": "Get Event",
+    "description": "Get a specific event.",
+    "tags": [
+      "EVENTS"
+    ],
+    "parameters": [
+      {
+        "name": "eventId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": ""
+      }
+    ],
+    "body_schema": null,
+    "body_required": false,
+    "content_type": null,
+    "deprecated": false,
+    "doc_url": "https://www.holded.com/developers/v1/crm-api/events/get-event"
+  },
+  "crm_GetFunnel": {
+    "operation_id": "crm_GetFunnel",
+    "api": "crm",
+    "method": "GET",
+    "path": "/api/crm/v1/funnels/{funnelId}",
+    "summary": "Get Funnel",
+    "description": "Get a specific funnel.",
+    "tags": [
+      "FUNNELS"
+    ],
+    "parameters": [
+      {
+        "name": "funnelId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": ""
+      }
+    ],
+    "body_schema": null,
+    "body_required": false,
+    "content_type": null,
+    "deprecated": false,
+    "doc_url": "https://www.holded.com/developers/v1/crm-api/funnels/get-funnel"
+  },
+  "crm_GetLead": {
+    "operation_id": "crm_GetLead",
+    "api": "crm",
+    "method": "GET",
+    "path": "/api/crm/v1/leads/{leadId}",
+    "summary": "Get Lead",
+    "description": "Get a specific lead.",
+    "tags": [
+      "LEADS"
+    ],
+    "parameters": [
+      {
+        "name": "leadId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": ""
+      }
+    ],
+    "body_schema": null,
+    "body_required": false,
+    "content_type": null,
+    "deprecated": false,
+    "doc_url": "https://www.holded.com/developers/v1/crm-api/leads/get-lead"
+  },
+  "crm_ListBookings": {
+    "operation_id": "crm_ListBookings",
+    "api": "crm",
+    "method": "GET",
+    "path": "/api/crm/v1/bookings",
+    "summary": "List Bookings",
+    "description": "Get all your bookings.",
+    "tags": [
+      "BOOKINGS"
+    ],
+    "parameters": [],
+    "body_schema": null,
+    "body_required": false,
+    "content_type": null,
+    "deprecated": false,
+    "doc_url": "https://www.holded.com/developers/v1/crm-api/bookings/list-bookings"
+  },
+  "crm_ListEvents": {
+    "operation_id": "crm_ListEvents",
+    "api": "crm",
+    "method": "GET",
+    "path": "/api/crm/v1/events",
+    "summary": "List Events",
+    "description": "Get all your events.",
+    "tags": [
+      "EVENTS"
+    ],
+    "parameters": [],
+    "body_schema": null,
+    "body_required": false,
+    "content_type": null,
+    "deprecated": false,
+    "doc_url": "https://www.holded.com/developers/v1/crm-api/events/list-events"
+  },
+  "crm_ListFunnels": {
+    "operation_id": "crm_ListFunnels",
+    "api": "crm",
+    "method": "GET",
+    "path": "/api/crm/v1/funnels",
+    "summary": "List Funnels",
+    "description": "Get all your funnels.",
+    "tags": [
+      "FUNNELS"
+    ],
+    "parameters": [],
+    "body_schema": null,
+    "body_required": false,
+    "content_type": null,
+    "deprecated": false,
+    "doc_url": "https://www.holded.com/developers/v1/crm-api/funnels/list-funnels"
+  },
+  "crm_ListLeads": {
+    "operation_id": "crm_ListLeads",
+    "api": "crm",
+    "method": "GET",
+    "path": "/api/crm/v1/leads",
+    "summary": "List Leads",
+    "description": "Get all your leads.",
+    "tags": [
+      "LEADS"
+    ],
+    "parameters": [],
+    "body_schema": null,
+    "body_required": false,
+    "content_type": null,
+    "deprecated": false,
+    "doc_url": "https://www.holded.com/developers/v1/crm-api/leads/list-leads"
+  },
+  "crm_ListLocations": {
+    "operation_id": "crm_ListLocations",
+    "api": "crm",
+    "method": "GET",
+    "path": "/api/crm/v1/bookings/locations",
+    "summary": "List Locations",
+    "description": "Get all your locations.",
+    "tags": [
+      "BOOKINGS"
+    ],
+    "parameters": [],
+    "body_schema": null,
+    "body_required": false,
+    "content_type": null,
+    "deprecated": false,
+    "doc_url": "https://www.holded.com/developers/v1/crm-api/bookings/list-locations"
+  },
+  "crm_UpdateBooking": {
+    "operation_id": "crm_UpdateBooking",
+    "api": "crm",
+    "method": "PUT",
+    "path": "/api/crm/v1/bookings/{bookingId}",
+    "summary": "Update Booking",
+    "description": "Update a specific booking.\n\nOnly the params included in the operation will update the booking.",
+    "tags": [
+      "BOOKINGS"
+    ],
+    "parameters": [
+      {
+        "name": "bookingId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": ""
+      }
+    ],
+    "body_schema": {
+      "type": "object",
+      "properties": {
+        "dateTime": {
+          "type": "integer"
+        },
+        "customFields": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "key": {
+                "type": "string"
+              },
+              "value": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    "body_required": false,
+    "content_type": "application/json",
+    "deprecated": false,
+    "doc_url": "https://www.holded.com/developers/v1/crm-api/bookings/update-booking"
+  },
+  "crm_UpdateEvent": {
+    "operation_id": "crm_UpdateEvent",
+    "api": "crm",
+    "method": "PUT",
+    "path": "/api/crm/v1/events/{eventId}",
+    "summary": "Update Event",
+    "description": "Update a specific event.\n\nOnly the params included in the operation will update the event.",
+    "tags": [
+      "EVENTS"
+    ],
+    "parameters": [
+      {
+        "name": "eventId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": ""
+      }
+    ],
+    "body_schema": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "contactId": {
+          "type": "string"
+        },
+        "contactName": {
+          "type": "string"
+        },
+        "kind": {
+          "type": "string"
+        },
+        "desc": {
+          "type": "string"
+        },
+        "startDate": {
+          "type": "integer"
+        },
+        "duration": {
+          "type": "integer"
+        },
+        "status": {
+          "type": "integer"
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "locationDesc": {
+          "type": "string"
+        },
+        "leadId": {
+          "type": "string"
+        },
+        "funnelId": {
+          "type": "string"
+        },
+        "userId": {
+          "type": "string"
+        }
+      }
+    },
+    "body_required": false,
+    "content_type": "application/json",
+    "deprecated": false,
+    "doc_url": "https://www.holded.com/developers/v1/crm-api/events/update-event"
+  },
+  "crm_UpdateFunnel": {
+    "operation_id": "crm_UpdateFunnel",
+    "api": "crm",
+    "method": "PUT",
+    "path": "/api/crm/v1/funnels/{funnelId}",
+    "summary": "Update Funnel",
+    "description": "Update a specific funnel.\n\nOnly the params included in the operation will update the funnel.",
+    "tags": [
+      "FUNNELS"
+    ],
+    "parameters": [
+      {
+        "name": "funnelId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": ""
+      }
+    ],
+    "body_schema": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "stages": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "stageId": {
+                "type": "string"
+              },
+              "key": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "desc": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "labels": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "labelId": {
+                "type": "string"
+              },
+              "labelName": {
+                "type": "string"
+              },
+              "labelColor": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "preferences": {
+          "type": "object",
+          "properties": {
+            "emails": {
+              "type": "array",
+              "items": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "customFields": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        }
+      }
+    },
+    "body_required": false,
+    "content_type": "application/json",
+    "deprecated": false,
+    "doc_url": "https://www.holded.com/developers/v1/crm-api/funnels/update-funnel"
+  },
+  "crm_UpdateLead": {
+    "operation_id": "crm_UpdateLead",
+    "api": "crm",
+    "method": "PUT",
+    "path": "/api/crm/v1/leads/{leadId}",
+    "summary": "Update Lead",
+    "description": "Update a specific lead.\n\nOnly the params included in the operation will update the lead.",
+    "tags": [
+      "LEADS"
+    ],
+    "parameters": [
+      {
+        "name": "leadId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": ""
+      }
+    ],
+    "body_schema": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "value": {
+          "type": "integer"
+        },
+        "dueDate": {
+          "type": "integer"
+        },
+        "customFields": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "field": {
+                "type": "string"
+              },
+              "value": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "status": {
+          "type": "integer"
+        }
+      }
+    },
+    "body_required": false,
+    "content_type": "application/json",
+    "deprecated": false,
+    "doc_url": "https://www.holded.com/developers/v1/crm-api/leads/update-lead"
+  },
+  "crm_UpdateLeadCreationDate": {
+    "operation_id": "crm_UpdateLeadCreationDate",
+    "api": "crm",
+    "method": "PUT",
+    "path": "/api/crm/v1/leads/{leadId}/dates",
+    "summary": "Update Lead Creation Date",
+    "description": "Update a specific lead creation's date.",
+    "tags": [
+      "LEADS"
+    ],
+    "parameters": [
+      {
+        "name": "leadId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": ""
+      }
+    ],
+    "body_schema": {
+      "type": "object",
+      "properties": {
+        "date": {
+          "type": "integer"
+        }
+      }
+    },
+    "body_required": false,
+    "content_type": "application/json",
+    "deprecated": false,
+    "doc_url": "https://www.holded.com/developers/v1/crm-api/leads/update-lead-creation-date"
+  },
+  "crm_UpdateLeadNote": {
+    "operation_id": "crm_UpdateLeadNote",
+    "api": "crm",
+    "method": "PUT",
+    "path": "/api/crm/v1/leads/{leadId}/notes",
+    "summary": "Update Lead Note",
+    "description": "Update a specific lead note.\n\nOnly the params included in the operation will update the note.",
+    "tags": [
+      "LEADS"
+    ],
+    "parameters": [
+      {
+        "name": "leadId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": ""
+      }
+    ],
+    "body_schema": {
+      "type": "object",
+      "properties": {
+        "noteId": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "desc": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "noteId"
+      ]
+    },
+    "body_required": false,
+    "content_type": "application/json",
+    "deprecated": false,
+    "doc_url": "https://www.holded.com/developers/v1/crm-api/leads/update-lead-note"
+  },
+  "crm_UpdateLeadStage": {
+    "operation_id": "crm_UpdateLeadStage",
+    "api": "crm",
+    "method": "PUT",
+    "path": "/api/crm/v1/leads/{leadId}/stages",
+    "summary": "Update Lead Stage",
+    "description": "Update a specific lead stage.",
+    "tags": [
+      "LEADS"
+    ],
+    "parameters": [
+      {
+        "name": "leadId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": ""
+      }
+    ],
+    "body_schema": {
+      "type": "object",
+      "properties": {
+        "stageId": {
+          "type": "string",
+          "description": "Either Stage ID or exact name are accepted. In the latter case, if there are multiple matches the oldest stage created will be selected."
+        }
+      }
+    },
+    "body_required": false,
+    "content_type": "application/json",
+    "deprecated": false,
+    "doc_url": "https://www.holded.com/developers/v1/crm-api/leads/update-lead-stage"
+  },
+  "crm_UpdateLeadTask": {
+    "operation_id": "crm_UpdateLeadTask",
+    "api": "crm",
+    "method": "PUT",
+    "path": "/api/crm/v1/leads/{leadId}/tasks",
+    "summary": "Update Lead Task",
+    "description": "Update a specific lead task.\n\nOnly the params included in the operation will update the task.",
+    "tags": [
+      "LEADS"
+    ],
+    "parameters": [
+      {
+        "name": "leadId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": ""
+      }
+    ],
+    "body_schema": {
+      "type": "object",
+      "properties": {
+        "taskId": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "taskId"
+      ]
+    },
+    "body_required": false,
+    "content_type": "application/json",
+    "deprecated": false,
+    "doc_url": "https://www.holded.com/developers/v1/crm-api/leads/update-lead-task"
+  },
+  "invoicing_AttachFile": {
+    "operation_id": "invoicing_AttachFile",
+    "api": "invoicing",
+    "method": "POST",
+    "path": "/api/invoicing/v1/documents/{docType}/{documentId}/attach",
+    "summary": "Attach File to a specific document",
+    "description": "Attach File to a specific document.",
+    "tags": [
+      "DOCUMENTS"
+    ],
+    "parameters": [
+      {
+        "name": "docType",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "enum": [
+            "invoice",
+            "salesreceipt",
+            "creditnote",
+            "salesorder",
+            "proform",
+            "waybill",
+            "estimate",
+            "purchase",
+            "purchaseorder",
+            "purchaserefund"
+          ]
+        },
+        "description": "Document type. One of: invoice, salesreceipt, creditnote, salesorder, proform, waybill, estimate, purchase, purchaseorder, purchaserefund."
+      },
+      {
+        "name": "documentId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": ""
+      }
+    ],
+    "body_schema": {
+      "type": "object",
+      "properties": {
+        "file": {
+          "description": "The file to upload.",
+          "type": "string",
+          "format": "binary"
+        },
+        "setMain": {
+          "type": "boolean"
+        }
+      }
+    },
+    "body_required": false,
+    "content_type": "multipart/form-data",
+    "deprecated": false,
+    "doc_url": "https://www.holded.com/developers/v1/invoice-api/documents/attach-file"
+  },
+  "invoicing_CreateContact": {
+    "operation_id": "invoicing_CreateContact",
+    "api": "invoicing",
+    "method": "POST",
+    "path": "/api/invoicing/v1/contacts",
+    "summary": "Create Contact",
+    "description": "Create a new contact.",
+    "tags": [
+      "CONTACTS"
+    ],
+    "parameters": [],
+    "body_schema": {
+      "type": "object",
+      "properties": {
+        "CustomId": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "code": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        },
+        "mobile": {
+          "type": "string"
+        },
+        "phone": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string",
+          "description": "Options: supplier, debtor, creditor, client, lead"
+        },
+        "isperson": {
+          "type": "boolean",
+          "description": "When true the contact is created as a Contact Person instead of as a Company"
+        },
+        "iban": {
+          "type": "string"
+        },
+        "swift": {
+          "type": "string"
+        },
+        "sepaRef": {
+          "type": "string"
+        },
+        "groupId": {
+          "type": "string"
+        },
+        "taxOperation": {
+          "type": "string",
+          "description": "options for Spain (general, intra, impexp, nosujeto, receq, exento)"
+        },
+        "sepaDate": {
+          "type": "number"
+        },
+        "clientRecord": {
+          "type": "integer"
+        },
+        "supplierRecord": {
+          "type": "integer"
+        },
+        "billAddress": {
+          "type": "object",
+          "properties": {
+            "address": {
+              "type": "string"
+            },
+            "city": {
+              "type": "string"
+            },
+            "postalCode": {
+              "type": "string"
+            },
+            "province": {
+              "type": "string"
+            },
+            "country": {
+              "type": "string"
+            }
+          }
+        },
+        "numberingSeries": {
+          "type": "object",
+          "description": "The value of each document should be a valid ID.",
+          "properties": {
+            "invoice": {
+              "type": "string"
+            },
+            "receipt": {
+              "type": "string"
+            },
+            "salesOrder": {
+              "type": "string"
+            },
+            "purchasesOrder": {
+              "type": "string"
+            },
+            "proform": {
+              "type": "string"
+            },
+            "waybill": {
+              "type": "string"
+            }
+          }
+        },
+        "shippingAddresses": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "address": {
+                "type": "string"
+              },
+              "city": {
+                "type": "string"
+              },
+              "postalCode": {
+                "type": "string"
+              },
+              "province": {
+                "type": "string"
+              },
+              "country": {
+                "type": "string"
+              },
+              "note": {
+                "type": "string"
+              },
+              "privateNote": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "defaults": {
+          "type": "object",
+          "properties": {
+            "expensesAccountRecord": {
+              "type": "integer"
+            },
+            "expensesAccountName": {
+              "type": "string"
+            },
+            "salesAccountRecord": {
+              "type": "integer"
+            },
+            "salesAccountName": {
+              "type": "string"
+            },
+            "dueDays": {
+              "type": "integer"
+            },
+            "salesTax": {
+              "type": "integer"
+            },
+            "salesTaxes": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "purchasesTax": {
+              "type": "integer"
+            },
+            "purchasesTaxes": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "accumulateInForm347": {
+              "type": "string",
+              "description": "Yes or No"
+            },
+            "paymentMethod": {
+              "type": "string",
+              "description": "Should be a valid ID"
+            },
+            "discount": {
+              "type": "integer"
+            },
+            "currency": {
+              "type": "string",
+              "description": "Currency ISO code in lowercase (e.g., eur = Euro, usd = U.S. Dollar, etc )"
+            },
+            "language": {
+              "type": "string",
+              "description": "options (es = spanish, en = english, fr = french, de = german, it = italian, ca = catalan, eu = euskera)"
+            },
+            "showTradeNameOnDocs": {
+              "type": "boolean"
+            },
+            "showCountryOnDocs": {
+              "type": "boolean"
+            }
+          }
+        },
+        "socialNetworks": {
+          "type": "object",
+          "properties": {
+            "website": {
+              "type": "string"
+            }
+          }
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "note": {
+          "type": "string"
+        },
+        "contactPersons": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "phone": {
+                "type": "string"
+              },
+              "email": {
+                "type": "string"
+              }
+            }
+          },
+          "required": [
+            "name"
+          ]
+        }
+      }
+    },
+    "body_required": false,
+    "content_type": "application/json",
+    "deprecated": false,
+    "doc_url": "https://www.holded.com/developers/v1/invoice-api/contacts/create-contact"
+  },
+  "invoicing_CreateContactGroup": {
+    "operation_id": "invoicing_CreateContactGroup",
+    "api": "invoicing",
+    "method": "POST",
+    "path": "/api/invoicing/v1/contacts/groups",
+    "summary": "Create Contact Group",
+    "description": "",
+    "tags": [
+      "CONTACT GROUPS"
+    ],
+    "parameters": [],
+    "body_schema": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "desc": {
+          "type": "string"
+        },
+        "color": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "name"
+      ]
+    },
+    "body_required": false,
+    "content_type": "application/json",
+    "deprecated": false,
+    "doc_url": "https://www.holded.com/developers/v1/invoice-api/contact-groups/create-contact-group"
+  },
+  "invoicing_CreateDocument": {
+    "operation_id": "invoicing_CreateDocument",
+    "api": "invoicing",
+    "method": "POST",
+    "path": "/api/invoicing/v1/documents/{docType}",
+    "summary": "Create Document",
+    "description": "Create a new document type.",
+    "tags": [
+      "DOCUMENTS"
+    ],
+    "parameters": [
+      {
+        "name": "docType",
+        "in": "path",
+        "required": true,
+        "description": "docType should be one of: {invoice, salesreceipt, creditnote, salesorder, proform, waybill,estimate, purchase, purchaseorder or purchaserefund}",
+        "schema": {
+          "type": "string",
+          "enum": [
+            "invoice",
+            "salesreceipt",
+            "creditnote",
+            "salesorder",
+            "proform",
+            "waybill",
+            "estimate",
+            "purchase",
+            "purchaseorder",
+            "purchaserefund"
+          ]
+        }
+      }
+    ],
+    "body_schema": {
+      "type": "object",
+      "properties": {
+        "applyContactDefaults": {
+          "type": "boolean",
+          "description": "Contact defaults are applied by default. If you don't want to apply it, set this field to false"
+        },
+        "contactCode": {
+          "type": "string",
+          "description": "(NIF / CIF / VAT) Field required if you want to choose an existing contact and contactId field is empty"
+        },
+        "contactId": {
+          "type": "string",
+          "description": "(Contact ID) Field required if you want to choose an existing contact and contactCode field is empty"
+        },
+        "contactName": {
+          "type": "string",
+          "description": "Field required if contactCode and contactId fields are empty and you want to create a new contact"
+        },
+        "contactEmail": {
+          "type": "string"
+        },
+        "contactAddress": {
+          "type": "string"
+        },
+        "contactCity": {
+          "type": "string"
+        },
+        "contactCp": {
+          "type": "string"
+        },
+        "contactProvince": {
+          "type": "string"
+        },
+        "contactCountryCode": {
+          "type": "string"
+        },
+        "desc": {
+          "type": "string"
+        },
+        "date": {
+          "type": "integer"
+        },
+        "notes": {
+          "type": "string"
+        },
+        "salesChannelId": {
+          "type": "string",
+          "description": "Set an existing account id"
+        },
+        "paymentMethodId": {
+          "type": "string"
+        },
+        "designId": {
+          "type": "string"
+        },
+        "language": {
+          "type": "string"
+        },
+        "warehouseId": {
+          "type": "string",
+          "description": "Choose the warehouse for your salesorder, purchaseorder or waybill."
+        },
+        "approveDoc": {
+          "type": "boolean",
+          "description": "Choose if the document needs to be approved or not. The default option is False."
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "desc": {
+                "type": "string"
+              },
+              "units": {
+                "type": "number"
+              },
+              "sku": {
+                "type": "string"
+              },
+              "serviceId": {
+                "type": "string"
+              },
+              "accountingAccountId": {
+                "type": "string"
+              },
+              "subtotal": {
+                "type": "number"
+              },
+              "discount": {
+                "type": "number"
+              },
+              "tax": {
+                "type": "integer",
+                "description": "IVA percentage. In case you need to inform more than one tax, use the field taxes instead"
+              },
+              "taxes": {
+                "type": "array",
+                "description": "Comma separated Tax keys. e.g. (s_iva_21,s_ret_19)",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "supplied": {
+                "type": "string",
+                "description": "Optional (Yes/No)"
+              },
+              "tags": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "customFields": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "field": {
+                "type": "string"
+              },
+              "value": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "invoiceNum": {
+          "type": "string"
+        },
+        "numSerieId": {
+          "type": "string"
+        },
+        "currency": {
+          "type": "string"
+        },
+        "currencyChange": {
+          "type": "number"
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "dueDate": {
+          "type": "integer"
+        },
+        "shippingAddress": {
+          "type": "string"
+        },
+        "shippingPostalCode": {
+          "type": "string"
+        },
+        "shippingCity": {
+          "type": "string"
+        },
+        "shippingProvince": {
+          "type": "string"
+        },
+        "shippingCountry": {
+          "type": "string"
+        },
+        "salesChannel": {
+          "type": "number"
+        },
+        "directDebitProvider": {
+          "type": "string",
+          "description": "When specified, triggers automatic payment collection via the given direct debit provider. Requires a valid paymentMethodId matching an active connection for that provider, and the invoice contact must have an active mandate.",
+          "example": "gocardless"
+        }
+      },
+      "required": [
+        "date"
+      ]
+    },
+    "body_required": false,
+    "content_type": "application/json",
+    "deprecated": false,
+    "doc_url": "https://www.holded.com/developers/v1/invoice-api/documents/create-document"
+  },
+  "invoicing_CreateExpensesAccount": {
+    "operation_id": "invoicing_CreateExpensesAccount",
+    "api": "invoicing",
+    "method": "POST",
+    "path": "/api/invoicing/v1/expensesaccounts",
+    "summary": "Create Expenses Account",
+    "description": "Create an expenses account.",
+    "tags": [
+      "EXPENSES ACCOUNTS"
+    ],
+    "parameters": [],
+    "body_schema": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "desc": {
+          "type": "string"
+        },
+        "accountNum": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "name",
+        "desc",
+        "accountNum"
+      ]
+    },
+    "body_required": false,
+    "content_type": "application/json",
+    "deprecated": false,
+    "doc_url": "https://www.holded.com/developers/v1/invoice-api/expenses-accounts/create-expenses-account"
+  },
+  "invoicing_CreateNumberingSerie": {
+    "operation_id": "invoicing_CreateNumberingSerie",
+    "api": "invoicing",
+    "method": "POST",
+    "path": "/api/invoicing/v1/numberingseries/{type}",
+    "summary": "Create Numbering Serie",
+    "description": "",
+    "tags": [
+      "NUMBERING SERIES"
+    ],
+    "parameters": [
+      {
+        "name": "type",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": ""
+      }
+    ],
+    "body_schema": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "format": {
+          "type": "string"
+        },
+        "last": {
+          "type": "integer"
+        },
+        "type": {
+          "type": "string"
+        }
+      }
+    },
+    "body_required": false,
+    "content_type": "application/json",
+    "deprecated": false,
+    "doc_url": "https://www.holded.com/developers/v1/invoice-api/numbering-series/create-numbering-serie"
+  },
+  "invoicing_CreatePayment": {
+    "operation_id": "invoicing_CreatePayment",
+    "api": "invoicing",
+    "method": "POST",
+    "path": "/api/invoicing/v1/payments",
+    "summary": "Create Payment",
+    "description": "",
+    "tags": [
+      "PAYMENTS"
+    ],
+    "parameters": [],
+    "body_schema": {
+      "type": "object",
+      "properties": {
+        "bankId": {
+          "type": "string"
+        },
+        "contactId": {
+          "type": "string"
+        },
+        "amount": {
+          "type": "number"
+        },
+        "desc": {
+          "type": "string"
+        },
+        "date": {
+          "type": "integer"
+        }
+      }
+    },
+    "body_required": false,
+    "content_type": "application/json",
+    "deprecated": false,
+    "doc_url": "https://www.holded.com/developers/v1/invoice-api/payments/create-payment"
+  },
+  "invoicing_CreateProduct": {
+    "operation_id": "invoicing_CreateProduct",
+    "api": "invoicing",
+    "method": "POST",
+    "path": "/api/invoicing/v1/products",
+    "summary": "Create Product",
+    "description": "",
+    "tags": [
+      "PRODUCTS"
+    ],
+    "parameters": [],
+    "body_schema": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "desc": {
+          "type": "string"
+        },
+        "price": {
+          "type": "number"
+        },
+        "tax": {
+          "type": "number"
+        },
+        "cost": {
+          "type": "number"
+        },
+        "calculatecost": {
+          "type": "number"
+        },
+        "purchasePrice": {
+          "type": "number"
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "barcode": {
+          "type": "string"
+        },
+        "sku": {
+          "type": "string"
+        },
+        "weight": {
+          "type": "number"
+        },
+        "stock": {
+          "type": "integer"
+        }
+      }
+    },
+    "body_required": false,
+    "content_type": "application/json",
+    "deprecated": false,
+    "doc_url": "https://www.holded.com/developers/v1/invoice-api/products/create-product"
+  },
+  "invoicing_CreateSalesChannel": {
+    "operation_id": "invoicing_CreateSalesChannel",
+    "api": "invoicing",
+    "method": "POST",
+    "path": "/api/invoicing/v1/saleschannels",
+    "summary": "Create Sales Channel",
+    "description": "",
+    "tags": [
+      "SALES CHANNELS"
+    ],
+    "parameters": [],
+    "body_schema": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "desc": {
+          "type": "string"
+        },
+        "accountNum": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "name",
+        "desc",
+        "accountNum"
+      ]
+    },
+    "body_required": false,
+    "content_type": "application/json",
+    "deprecated": false,
+    "doc_url": "https://www.holded.com/developers/v1/invoice-api/sales-channels/create-sales-channel"
+  },
+  "invoicing_CreateService": {
+    "operation_id": "invoicing_CreateService",
+    "api": "invoicing",
+    "method": "POST",
+    "path": "/api/invoicing/v1/services",
+    "summary": "Create Service",
+    "description": "",
+    "tags": [
+      "SERVICES"
+    ],
+    "parameters": [],
+    "body_schema": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "desc": {
+          "type": "string"
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "tax": {
+          "type": "number"
+        },
+        "subtotal": {
+          "type": "integer"
+        },
+        "salesChannelId": {
+          "type": "string"
+        },
+        "cost": {
+          "type": "number"
+        }
+      }
+    },
+    "body_required": false,
+    "content_type": "application/json",
+    "deprecated": false,
+    "doc_url": "https://www.holded.com/developers/v1/invoice-api/services/create-service"
+  },
+  "invoicing_CreateTreasury": {
+    "operation_id": "invoicing_CreateTreasury",
+    "api": "invoicing",
+    "method": "POST",
+    "path": "/api/invoicing/v1/treasury",
+    "summary": "Create Treasury Account",
+    "description": "",
+    "tags": [
+      "TREASURIES"
+    ],
+    "parameters": [],
+    "body_schema": {
+      "title": "Bank Input",
+      "description": "The properties that are allowed when creating or updating a Bank.",
+      "allOf": [
+        {
+          "title": "Bank Common",
+          "description": "The properties that are shared amongst all versions of the Bank model.",
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "name": {
+              "type": "string"
+            },
+            "type": {
+              "type": "string"
+            },
+            "balance": {
+              "type": "integer"
+            },
+            "accountNumber": {
+              "type": "integer"
+            },
+            "iban": {
+              "type": "string"
+            },
+            "swift": {
+              "type": "string"
+            },
+            "bank": {
+              "type": "string"
+            },
+            "bankname": {
+              "type": "string"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "properties": {}
+        }
+      ]
+    },
+    "body_required": false,
+    "content_type": "application/json",
+    "deprecated": false,
+    "doc_url": "https://www.holded.com/developers/v1/invoice-api/treasuries/create-treasury"
+  },
+  "invoicing_CreateWarehouse": {
+    "operation_id": "invoicing_CreateWarehouse",
+    "api": "invoicing",
+    "method": "POST",
+    "path": "/api/invoicing/v1/warehouses",
+    "summary": "Create Warehouse",
+    "description": "",
+    "tags": [
+      "WAREHOUSES"
+    ],
+    "parameters": [],
+    "body_schema": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        },
+        "phone": {
+          "type": "string"
+        },
+        "mobile": {
+          "type": "string"
+        },
+        "address": {
+          "type": "object",
+          "properties": {
+            "address": {
+              "type": "string"
+            },
+            "city": {
+              "type": "string"
+            },
+            "postalCode": {
+              "type": "string"
+            },
+            "province": {
+              "type": "string"
+            },
+            "country": {
+              "type": "string"
+            },
+            "countryCode": {
+              "type": "string"
+            }
+          }
+        },
+        "default": {
+          "type": "boolean"
+        }
+      }
+    },
+    "body_required": false,
+    "content_type": "application/json",
+    "deprecated": false,
+    "doc_url": "https://www.holded.com/developers/v1/invoice-api/warehouses/create-warehouse"
+  },
+  "invoicing_DeleteContact": {
+    "operation_id": "invoicing_DeleteContact",
+    "api": "invoicing",
+    "method": "DELETE",
+    "path": "/api/invoicing/v1/contacts/{contactId}",
+    "summary": "Delete Contact",
+    "description": "Delete specific contact",
+    "tags": [
+      "CONTACTS"
+    ],
+    "parameters": [
+      {
+        "name": "contactId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": ""
+      }
+    ],
+    "body_schema": null,
+    "body_required": false,
+    "content_type": null,
+    "deprecated": false,
+    "doc_url": "https://www.holded.com/developers/v1/invoice-api/contacts/delete-contact"
+  },
+  "invoicing_DeleteContactGroup": {
+    "operation_id": "invoicing_DeleteContactGroup",
+    "api": "invoicing",
+    "method": "DELETE",
+    "path": "/api/invoicing/v1/contacts/groups/{groupId}",
+    "summary": "Delete Contact Group",
+    "description": "",
+    "tags": [
+      "CONTACT GROUPS"
+    ],
+    "parameters": [
+      {
+        "name": "groupId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": ""
+      }
+    ],
+    "body_schema": null,
+    "body_required": false,
+    "content_type": null,
+    "deprecated": false,
+    "doc_url": "https://www.holded.com/developers/v1/invoice-api/contact-groups/delete-contact-group"
+  },
+  "invoicing_DeleteDocument": {
+    "operation_id": "invoicing_DeleteDocument",
+    "api": "invoicing",
+    "method": "DELETE",
+    "path": "/api/invoicing/v1/documents/{docType}/{documentId}",
+    "summary": "Delete Document",
+    "description": "Delete specific document type.",
+    "tags": [
+      "DOCUMENTS"
+    ],
+    "parameters": [
+      {
+        "name": "docType",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "enum": [
+            "invoice",
+            "salesreceipt",
+            "creditnote",
+            "salesorder",
+            "proform",
+            "waybill",
+            "estimate",
+            "purchase",
+            "purchaseorder",
+            "purchaserefund"
+          ]
+        },
+        "description": "Document type. One of: invoice, salesreceipt, creditnote, salesorder, proform, waybill, estimate, purchase, purchaseorder, purchaserefund."
+      },
+      {
+        "name": "documentId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": ""
+      }
+    ],
+    "body_schema": null,
+    "body_required": false,
+    "content_type": null,
+    "deprecated": false,
+    "doc_url": "https://www.holded.com/developers/v1/invoice-api/documents/delete-document"
+  },
+  "invoicing_DeleteExpensesAccount": {
+    "operation_id": "invoicing_DeleteExpensesAccount",
+    "api": "invoicing",
+    "method": "DELETE",
+    "path": "/api/invoicing/v1/expensesaccounts/{expensesAccountId}",
+    "summary": "Delete Expenses Account",
+    "description": "Delete a specific expenses account.",
+    "tags": [
+      "EXPENSES ACCOUNTS"
+    ],
+    "parameters": [
+      {
+        "name": "expensesAccountId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": ""
+      }
+    ],
+    "body_schema": null,
+    "body_required": false,
+    "content_type": null,
+    "deprecated": false,
+    "doc_url": "https://www.holded.com/developers/v1/invoice-api/expenses-accounts/delete-expenses-account"
+  },
+  "invoicing_DeleteNumberingSerie": {
+    "operation_id": "invoicing_DeleteNumberingSerie",
+    "api": "invoicing",
+    "method": "DELETE",
+    "path": "/api/invoicing/v1/numberingseries/{type}/{numberingSeriesId}",
+    "summary": "Delete Numbering Serie",
+    "description": "",
+    "tags": [
+      "NUMBERING SERIES"
+    ],
+    "parameters": [
+      {
+        "name": "type",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": ""
+      },
+      {
+        "name": "numberingSeriesId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": ""
+      }
+    ],
+    "body_schema": null,
+    "body_required": false,
+    "content_type": null,
+    "deprecated": false,
+    "doc_url": "https://www.holded.com/developers/v1/invoice-api/numbering-series/delete-numbering-serie"
+  },
+  "invoicing_DeletePayment": {
+    "operation_id": "invoicing_DeletePayment",
+    "api": "invoicing",
+    "method": "DELETE",
+    "path": "/api/invoicing/v1/payments/{paymentId}",
+    "summary": "Delete Payment",
+    "description": "",
+    "tags": [
+      "PAYMENTS"
+    ],
+    "parameters": [
+      {
+        "name": "paymentId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": ""
+      }
+    ],
+    "body_schema": null,
+    "body_required": false,
+    "content_type": null,
+    "deprecated": false,
+    "doc_url": "https://www.holded.com/developers/v1/invoice-api/payments/delete-payment"
+  },
+  "invoicing_DeleteProduct": {
+    "operation_id": "invoicing_DeleteProduct",
+    "api": "invoicing",
+    "method": "DELETE",
+    "path": "/api/invoicing/v1/products/{productId}",
+    "summary": "Delete Product",
+    "description": "",
+    "tags": [
+      "PRODUCTS"
+    ],
+    "parameters": [
+      {
+        "name": "productId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": ""
+      }
+    ],
+    "body_schema": null,
+    "body_required": false,
+    "content_type": null,
+    "deprecated": false,
+    "doc_url": "https://www.holded.com/developers/v1/invoice-api/products/delete-product"
+  },
+  "invoicing_DeleteSalesChannel": {
+    "operation_id": "invoicing_DeleteSalesChannel",
+    "api": "invoicing",
+    "method": "DELETE",
+    "path": "/api/invoicing/v1/saleschannels/{salesChannelId}",
+    "summary": "Delete Sales Channel",
+    "description": "",
+    "tags": [
+      "SALES CHANNELS"
+    ],
+    "parameters": [
+      {
+        "name": "salesChannelId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": ""
+      }
+    ],
+    "body_schema": null,
+    "body_required": false,
+    "content_type": null,
+    "deprecated": false,
+    "doc_url": "https://www.holded.com/developers/v1/invoice-api/sales-channels/delete-sales-channel"
+  },
+  "invoicing_DeleteService": {
+    "operation_id": "invoicing_DeleteService",
+    "api": "invoicing",
+    "method": "DELETE",
+    "path": "/api/invoicing/v1/services/{serviceId}",
+    "summary": "Delete Service",
+    "description": "",
+    "tags": [
+      "SERVICES"
+    ],
+    "parameters": [
+      {
+        "name": "serviceId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": ""
+      }
+    ],
+    "body_schema": null,
+    "body_required": false,
+    "content_type": null,
+    "deprecated": false,
+    "doc_url": "https://www.holded.com/developers/v1/invoice-api/services/delete-service"
+  },
+  "invoicing_DeleteWarehouse": {
+    "operation_id": "invoicing_DeleteWarehouse",
+    "api": "invoicing",
+    "method": "DELETE",
+    "path": "/api/invoicing/v1/warehouses/{warehouseId}",
+    "summary": "Delete Warehouse",
+    "description": "",
+    "tags": [
+      "WAREHOUSES"
+    ],
+    "parameters": [
+      {
+        "name": "warehouseId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": ""
+      }
+    ],
+    "body_schema": null,
+    "body_required": false,
+    "content_type": null,
+    "deprecated": false,
+    "doc_url": "https://www.holded.com/developers/v1/invoice-api/warehouses/delete-warehouse"
+  },
+  "invoicing_GetAttachment": {
+    "operation_id": "invoicing_GetAttachment",
+    "api": "invoicing",
+    "method": "GET",
+    "path": "/api/invoicing/v1/contacts/{contactId}/attachments/get",
+    "summary": "Get attachment",
+    "description": "Get attachment",
+    "tags": [
+      "CONTACTS"
+    ],
+    "parameters": [
+      {
+        "name": "contactId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": ""
+      },
+      {
+        "name": "filename",
+        "in": "query",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": ""
+      }
+    ],
+    "body_schema": null,
+    "body_required": false,
+    "content_type": null,
+    "deprecated": false,
+    "doc_url": "https://www.holded.com/developers/v1/invoice-api/contacts/get-attachment"
+  },
+  "invoicing_GetAttachmentsList": {
+    "operation_id": "invoicing_GetAttachmentsList",
+    "api": "invoicing",
+    "method": "GET",
+    "path": "/api/invoicing/v1/contacts/{contactId}/attachments/list",
+    "summary": "Get contact attachments list",
+    "description": "Get attachments list for a given contact.",
+    "tags": [
+      "CONTACTS"
+    ],
+    "parameters": [
+      {
+        "name": "contactId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": ""
+      }
+    ],
+    "body_schema": null,
+    "body_required": false,
+    "content_type": null,
+    "deprecated": false,
+    "doc_url": "https://www.holded.com/developers/v1/invoice-api/contacts/get-attachments-list"
+  },
+  "invoicing_GetContact": {
+    "operation_id": "invoicing_GetContact",
+    "api": "invoicing",
+    "method": "GET",
+    "path": "/api/invoicing/v1/contacts/{contactId}",
+    "summary": "Get Contact",
+    "description": "Get a specific contact.",
+    "tags": [
+      "CONTACTS"
+    ],
+    "parameters": [
+      {
+        "name": "contactId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": ""
+      }
+    ],
+    "body_schema": null,
+    "body_required": false,
+    "content_type": null,
+    "deprecated": false,
+    "doc_url": "https://www.holded.com/developers/v1/invoice-api/contacts/get-contact"
+  },
+  "invoicing_GetContactGroup": {
+    "operation_id": "invoicing_GetContactGroup",
+    "api": "invoicing",
+    "method": "GET",
+    "path": "/api/invoicing/v1/contacts/groups/{groupId}",
+    "summary": "Get Contact Group",
+    "description": "",
+    "tags": [
+      "CONTACT GROUPS"
+    ],
+    "parameters": [
+      {
+        "name": "groupId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": ""
+      }
+    ],
+    "body_schema": null,
+    "body_required": false,
+    "content_type": null,
+    "deprecated": false,
+    "doc_url": "https://www.holded.com/developers/v1/invoice-api/contact-groups/get-contact-group"
+  },
+  "invoicing_GetDocument": {
+    "operation_id": "invoicing_GetDocument",
+    "api": "invoicing",
+    "method": "GET",
+    "path": "/api/invoicing/v1/documents/{docType}/{documentId}",
+    "summary": "Get Document",
+    "description": "Get a specific document.",
+    "tags": [
+      "DOCUMENTS"
+    ],
+    "parameters": [
+      {
+        "name": "docType",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "enum": [
+            "invoice",
+            "salesreceipt",
+            "creditnote",
+            "salesorder",
+            "proform",
+            "waybill",
+            "estimate",
+            "purchase",
+            "purchaseorder",
+            "purchaserefund"
+          ]
+        },
+        "description": "Document type. One of: invoice, salesreceipt, creditnote, salesorder, proform, waybill, estimate, purchase, purchaseorder, purchaserefund."
+      },
+      {
+        "name": "documentId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": ""
+      }
+    ],
+    "body_schema": null,
+    "body_required": false,
+    "content_type": null,
+    "deprecated": false,
+    "doc_url": "https://www.holded.com/developers/v1/invoice-api/documents/getdocument"
+  },
+  "invoicing_GetDocumentPDF": {
+    "operation_id": "invoicing_GetDocumentPDF",
+    "api": "invoicing",
+    "method": "GET",
+    "path": "/api/invoicing/v1/documents/{docType}/{documentId}/pdf",
+    "summary": "Get Document PDF",
+    "description": "Get a specific document pdf.",
+    "tags": [
+      "DOCUMENTS"
+    ],
+    "parameters": [
+      {
+        "name": "docType",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "enum": [
+            "invoice",
+            "salesreceipt",
+            "creditnote",
+            "salesorder",
+            "proform",
+            "waybill",
+            "estimate",
+            "purchase",
+            "purchaseorder",
+            "purchaserefund"
+          ]
+        },
+        "description": "Document type. One of: invoice, salesreceipt, creditnote, salesorder, proform, waybill, estimate, purchase, purchaseorder, purchaserefund."
+      },
+      {
+        "name": "documentId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": ""
+      }
+    ],
+    "body_schema": null,
+    "body_required": false,
+    "content_type": null,
+    "deprecated": false,
+    "doc_url": "https://www.holded.com/developers/v1/invoice-api/documents/getdocumentpdf"
+  },
+  "invoicing_GetExpensesAccount": {
+    "operation_id": "invoicing_GetExpensesAccount",
+    "api": "invoicing",
+    "method": "GET",
+    "path": "/api/invoicing/v1/expensesaccounts/{expensesAccountId}",
+    "summary": "Get Expenses Account",
+    "description": "Get a specific expenses account.",
+    "tags": [
+      "EXPENSES ACCOUNTS"
+    ],
+    "parameters": [
+      {
+        "name": "expensesAccountId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": ""
+      }
+    ],
+    "body_schema": null,
+    "body_required": false,
+    "content_type": null,
+    "deprecated": false,
+    "doc_url": "https://www.holded.com/developers/v1/invoice-api/expenses-accounts/get-expenses-account"
+  },
+  "invoicing_GetNumberingSeries": {
+    "operation_id": "invoicing_GetNumberingSeries",
+    "api": "invoicing",
+    "method": "GET",
+    "path": "/api/invoicing/v1/numberingseries/{type}",
+    "summary": "Get Numbering Series by Type",
+    "description": "",
+    "tags": [
+      "NUMBERING SERIES"
+    ],
+    "parameters": [
+      {
+        "name": "type",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": ""
+      }
+    ],
+    "body_schema": null,
+    "body_required": false,
+    "content_type": null,
+    "deprecated": false,
+    "doc_url": "https://www.holded.com/developers/v1/invoice-api/numbering-series/get-numbering-series"
+  },
+  "invoicing_GetPayment": {
+    "operation_id": "invoicing_GetPayment",
+    "api": "invoicing",
+    "method": "GET",
+    "path": "/api/invoicing/v1/payments/{paymentId}",
+    "summary": "Get Payment",
+    "description": "",
+    "tags": [
+      "PAYMENTS"
+    ],
+    "parameters": [
+      {
+        "name": "paymentId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": ""
+      }
+    ],
+    "body_schema": null,
+    "body_required": false,
+    "content_type": null,
+    "deprecated": false,
+    "doc_url": "https://www.holded.com/developers/v1/invoice-api/payments/get-payment"
+  },
+  "invoicing_GetProduct": {
+    "operation_id": "invoicing_GetProduct",
+    "api": "invoicing",
+    "method": "GET",
+    "path": "/api/invoicing/v1/products/{productId}",
+    "summary": "Get  Product",
+    "description": "Get a speccific product",
+    "tags": [
+      "PRODUCTS"
+    ],
+    "parameters": [
+      {
+        "name": "productId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": ""
+      }
+    ],
+    "body_schema": null,
+    "body_required": false,
+    "content_type": null,
+    "deprecated": false,
+    "doc_url": "https://www.holded.com/developers/v1/invoice-api/products/get-product"
+  },
+  "invoicing_GetProductImage": {
+    "operation_id": "invoicing_GetProductImage",
+    "api": "invoicing",
+    "method": "GET",
+    "path": "/api/invoicing/v1/products/{productId}/image",
+    "summary": "Get Product Main Image",
+    "description": "Get the main image of a specific product",
+    "tags": [
+      "PRODUCTS"
+    ],
+    "parameters": [
+      {
+        "name": "productId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": ""
+      }
+    ],
+    "body_schema": null,
+    "body_required": false,
+    "content_type": null,
+    "deprecated": false,
+    "doc_url": "https://www.holded.com/developers/v1/invoice-api/products/get-product-image"
+  },
+  "invoicing_GetProductSecondaryImage": {
+    "operation_id": "invoicing_GetProductSecondaryImage",
+    "api": "invoicing",
+    "method": "GET",
+    "path": "/api/invoicing/v1/products/{productId}/image/{imageFileName}",
+    "summary": "Get Product Secondary Image",
+    "description": "Get a specific secondary Image",
+    "tags": [
+      "PRODUCTS"
+    ],
+    "parameters": [
+      {
+        "name": "productId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": ""
+      },
+      {
+        "name": "imageFileName",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": ""
+      }
+    ],
+    "body_schema": null,
+    "body_required": false,
+    "content_type": null,
+    "deprecated": false,
+    "doc_url": "https://www.holded.com/developers/v1/invoice-api/products/get-product-secondary-image"
+  },
+  "invoicing_GetRemittance": {
+    "operation_id": "invoicing_GetRemittance",
+    "api": "invoicing",
+    "method": "GET",
+    "path": "/api/invoicing/v1/remittances/{remittanceId}",
+    "summary": "Get Remittance",
+    "description": "",
+    "tags": [
+      "REMITTANCES"
+    ],
+    "parameters": [
+      {
+        "name": "remittanceId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": ""
+      }
+    ],
+    "body_schema": null,
+    "body_required": false,
+    "content_type": null,
+    "deprecated": false,
+    "doc_url": "https://www.holded.com/developers/v1/invoice-api/remittances/get-remittance"
+  },
+  "invoicing_GetSalesChannel": {
+    "operation_id": "invoicing_GetSalesChannel",
+    "api": "invoicing",
+    "method": "GET",
+    "path": "/api/invoicing/v1/saleschannels/{salesChannelId}",
+    "summary": "Get Sales Channel",
+    "description": "",
+    "tags": [
+      "SALES CHANNELS"
+    ],
+    "parameters": [
+      {
+        "name": "salesChannelId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": ""
+      }
+    ],
+    "body_schema": null,
+    "body_required": false,
+    "content_type": null,
+    "deprecated": false,
+    "doc_url": "https://www.holded.com/developers/v1/invoice-api/sales-channels/get-sales-channel"
+  },
+  "invoicing_GetService": {
+    "operation_id": "invoicing_GetService",
+    "api": "invoicing",
+    "method": "GET",
+    "path": "/api/invoicing/v1/services/{serviceId}",
+    "summary": "Get Service",
+    "description": "",
+    "tags": [
+      "SERVICES"
+    ],
+    "parameters": [
+      {
+        "name": "serviceId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": ""
+      }
+    ],
+    "body_schema": null,
+    "body_required": false,
+    "content_type": null,
+    "deprecated": false,
+    "doc_url": "https://www.holded.com/developers/v1/invoice-api/services/get-service"
+  },
+  "invoicing_GetTaxes": {
+    "operation_id": "invoicing_GetTaxes",
+    "api": "invoicing",
+    "method": "GET",
+    "path": "/api/invoicing/v1/taxes",
+    "summary": "Get Taxes",
+    "description": "Get all the taxes information for a specific account",
+    "tags": [
+      "TAXES"
+    ],
+    "parameters": [],
+    "body_schema": null,
+    "body_required": false,
+    "content_type": null,
+    "deprecated": false,
+    "doc_url": "https://www.holded.com/developers/v1/invoice-api/taxes/gettaxes"
+  },
+  "invoicing_GetTreasury": {
+    "operation_id": "invoicing_GetTreasury",
+    "api": "invoicing",
+    "method": "GET",
+    "path": "/api/invoicing/v1/treasury/{treasuryId}",
+    "summary": "Get Treasury Account",
+    "description": "",
+    "tags": [
+      "TREASURIES"
+    ],
+    "parameters": [
+      {
+        "name": "treasuryId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": ""
+      }
+    ],
+    "body_schema": null,
+    "body_required": false,
+    "content_type": null,
+    "deprecated": false,
+    "doc_url": "https://www.holded.com/developers/v1/invoice-api/treasuries/get-treasury"
+  },
+  "invoicing_GetWarehouse": {
+    "operation_id": "invoicing_GetWarehouse",
+    "api": "invoicing",
+    "method": "GET",
+    "path": "/api/invoicing/v1/warehouses/{warehouseId}",
+    "summary": "Get Warehouse",
+    "description": "",
+    "tags": [
+      "WAREHOUSES"
+    ],
+    "parameters": [
+      {
+        "name": "warehouseId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": ""
+      }
+    ],
+    "body_schema": null,
+    "body_required": false,
+    "content_type": null,
+    "deprecated": false,
+    "doc_url": "https://www.holded.com/developers/v1/invoice-api/warehouses/get-warehouse"
+  },
+  "invoicing_ListContactGroups": {
+    "operation_id": "invoicing_ListContactGroups",
+    "api": "invoicing",
+    "method": "GET",
+    "path": "/api/invoicing/v1/contacts/groups",
+    "summary": "List Contact Groups",
+    "description": "",
+    "tags": [
+      "CONTACT GROUPS"
+    ],
+    "parameters": [],
+    "body_schema": null,
+    "body_required": false,
+    "content_type": null,
+    "deprecated": false,
+    "doc_url": "https://www.holded.com/developers/v1/invoice-api/contact-groups/list-contact-groups"
+  },
+  "invoicing_ListContacts": {
+    "operation_id": "invoicing_ListContacts",
+    "api": "invoicing",
+    "method": "GET",
+    "path": "/api/invoicing/v1/contacts",
+    "summary": "List Contacts",
+    "description": "Get all your contact.",
+    "tags": [
+      "CONTACTS"
+    ],
+    "parameters": [
+      {
+        "name": "phone",
+        "in": "query",
+        "required": false,
+        "description": "Must be an exact match, including special characters like \"+\", \"#\", and \"-\".",
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "mobile",
+        "in": "query",
+        "required": false,
+        "description": "Must be an exact match, including special characters like \"+\", \"#\", and \"-\".",
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "customId",
+        "in": "query",
+        "required": false,
+        "description": "Return only the contacts that matches with the provided customId",
+        "style": "form",
+        "explode": false,
+        "schema": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    ],
+    "body_schema": null,
+    "body_required": false,
+    "content_type": null,
+    "deprecated": false,
+    "doc_url": "https://www.holded.com/developers/v1/invoice-api/contacts/list-contacts"
+  },
+  "invoicing_ListDocuments": {
+    "operation_id": "invoicing_ListDocuments",
+    "api": "invoicing",
+    "method": "GET",
+    "path": "/api/invoicing/v1/documents/{docType}",
+    "summary": "List Documents",
+    "description": "Get all your documents by type.",
+    "tags": [
+      "DOCUMENTS"
+    ],
+    "parameters": [
+      {
+        "name": "docType",
+        "in": "path",
+        "required": true,
+        "description": "docType should be one of: {invoice, salesreceipt, creditnote, salesorder, proform, waybill,estimate, purchase, purchaseorder or purchaserefund}",
+        "schema": {
+          "type": "string",
+          "enum": [
+            "invoice",
+            "salesreceipt",
+            "creditnote",
+            "salesorder",
+            "proform",
+            "waybill",
+            "estimate",
+            "purchase",
+            "purchaseorder",
+            "purchaserefund"
+          ]
+        }
+      },
+      {
+        "name": "starttmp",
+        "in": "query",
+        "description": "Starting timestamp",
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "endtmp",
+        "in": "query",
+        "description": "Ending timestamp",
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "contactid",
+        "in": "query",
+        "description": "Filtering by contact Id",
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "paid",
+        "in": "query",
+        "description": "Filtering by paid status. 0 = not paid, 1 = paid, 2 = partially paid",
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "billed",
+        "in": "query",
+        "description": "Filtering by billed status. 0 = not billed, 1 = billed",
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "sort",
+        "in": "query",
+        "description": "Sort documents. Options: `created-asc` to sort by creation date of documents in ascending order or `created-desc` to sort by creation date of documents in descending order",
+        "schema": {
+          "type": "string",
+          "enum": [
+            "created-asc",
+            "created-desc"
+          ]
+        }
+      }
+    ],
+    "body_schema": null,
+    "body_required": false,
+    "content_type": null,
+    "deprecated": false,
+    "doc_url": "https://www.holded.com/developers/v1/invoice-api/documents/list-documents"
+  },
+  "invoicing_ListExpensesAccounts": {
+    "operation_id": "invoicing_ListExpensesAccounts",
+    "api": "invoicing",
+    "method": "GET",
+    "path": "/api/invoicing/v1/expensesaccounts",
+    "summary": "List Expenses Accounts",
+    "description": "List all your expenses accounts.",
+    "tags": [
+      "EXPENSES ACCOUNTS"
+    ],
+    "parameters": [],
+    "body_schema": null,
+    "body_required": false,
+    "content_type": null,
+    "deprecated": false,
+    "doc_url": "https://www.holded.com/developers/v1/invoice-api/expenses-accounts/list-expenses-accounts"
+  },
+  "invoicing_ListPaymentMethods": {
+    "operation_id": "invoicing_ListPaymentMethods",
+    "api": "invoicing",
+    "method": "GET",
+    "path": "/api/invoicing/v1/paymentmethods",
+    "summary": "List Payment methods",
+    "description": "List Payment methods",
+    "tags": [
+      "DOCUMENTS"
+    ],
+    "parameters": [],
+    "body_schema": null,
+    "body_required": false,
+    "content_type": null,
+    "deprecated": false,
+    "doc_url": "https://www.holded.com/developers/v1/invoice-api/documents/list-payment-methods"
+  },
+  "invoicing_ListPayments": {
+    "operation_id": "invoicing_ListPayments",
+    "api": "invoicing",
+    "method": "GET",
+    "path": "/api/invoicing/v1/payments",
+    "summary": "List Payments",
+    "description": "",
+    "tags": [
+      "PAYMENTS"
+    ],
+    "parameters": [
+      {
+        "name": "starttmp",
+        "in": "query",
+        "description": "Starting timestamp",
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "endtmp",
+        "in": "query",
+        "description": "Ending timestamp",
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "body_schema": null,
+    "body_required": false,
+    "content_type": null,
+    "deprecated": false,
+    "doc_url": "https://www.holded.com/developers/v1/invoice-api/payments/list-payments"
+  },
+  "invoicing_ListProductImages": {
+    "operation_id": "invoicing_ListProductImages",
+    "api": "invoicing",
+    "method": "GET",
+    "path": "/api/invoicing/v1/products/{productId}/imagesList",
+    "summary": "List Product Images",
+    "description": "List all secondary product images",
+    "tags": [
+      "PRODUCTS"
+    ],
+    "parameters": [
+      {
+        "name": "productId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": ""
+      }
+    ],
+    "body_schema": null,
+    "body_required": false,
+    "content_type": null,
+    "deprecated": false,
+    "doc_url": "https://www.holded.com/developers/v1/invoice-api/products/list-product-images"
+  },
+  "invoicing_ListProducts": {
+    "operation_id": "invoicing_ListProducts",
+    "api": "invoicing",
+    "method": "GET",
+    "path": "/api/invoicing/v1/products",
+    "summary": "List Products",
+    "description": "",
+    "tags": [
+      "PRODUCTS"
+    ],
+    "parameters": [],
+    "body_schema": null,
+    "body_required": false,
+    "content_type": null,
+    "deprecated": false,
+    "doc_url": "https://www.holded.com/developers/v1/invoice-api/products/list-products"
+  },
+  "invoicing_ListProductsStock": {
+    "operation_id": "invoicing_ListProductsStock",
+    "api": "invoicing",
+    "method": "GET",
+    "path": "/api/invoicing/v1/warehouses/{warehouseId}/stock",
+    "summary": "List products stock",
+    "description": "",
+    "tags": [
+      "WAREHOUSES"
+    ],
+    "parameters": [
+      {
+        "name": "warehouseId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": ""
+      }
+    ],
+    "body_schema": null,
+    "body_required": false,
+    "content_type": null,
+    "deprecated": false,
+    "doc_url": "https://www.holded.com/developers/v1/invoice-api/warehouses/list-products-stock"
+  },
+  "invoicing_ListRemittances": {
+    "operation_id": "invoicing_ListRemittances",
+    "api": "invoicing",
+    "method": "GET",
+    "path": "/api/invoicing/v1/remittances",
+    "summary": "List Remittances",
+    "description": "",
+    "tags": [
+      "REMITTANCES"
+    ],
+    "parameters": [],
+    "body_schema": null,
+    "body_required": false,
+    "content_type": null,
+    "deprecated": false,
+    "doc_url": "https://www.holded.com/developers/v1/invoice-api/remittances/list-remittances"
+  },
+  "invoicing_ListSalesChannels": {
+    "operation_id": "invoicing_ListSalesChannels",
+    "api": "invoicing",
+    "method": "GET",
+    "path": "/api/invoicing/v1/saleschannels",
+    "summary": "List Sales Channels",
+    "description": "",
+    "tags": [
+      "SALES CHANNELS"
+    ],
+    "parameters": [],
+    "body_schema": null,
+    "body_required": false,
+    "content_type": null,
+    "deprecated": false,
+    "doc_url": "https://www.holded.com/developers/v1/invoice-api/sales-channels/list-sales-channels"
+  },
+  "invoicing_ListServices": {
+    "operation_id": "invoicing_ListServices",
+    "api": "invoicing",
+    "method": "GET",
+    "path": "/api/invoicing/v1/services",
+    "summary": "List Services",
+    "description": "",
+    "tags": [
+      "SERVICES"
+    ],
+    "parameters": [],
+    "body_schema": null,
+    "body_required": false,
+    "content_type": null,
+    "deprecated": false,
+    "doc_url": "https://www.holded.com/developers/v1/invoice-api/services/list-services"
+  },
+  "invoicing_ListTreasuries": {
+    "operation_id": "invoicing_ListTreasuries",
+    "api": "invoicing",
+    "method": "GET",
+    "path": "/api/invoicing/v1/treasury",
+    "summary": "List Treasuries Accounts",
+    "description": "",
+    "tags": [
+      "TREASURIES"
+    ],
+    "parameters": [],
+    "body_schema": null,
+    "body_required": false,
+    "content_type": null,
+    "deprecated": false,
+    "doc_url": "https://www.holded.com/developers/v1/invoice-api/treasuries/list-treasuries"
+  },
+  "invoicing_ListWarehouses": {
+    "operation_id": "invoicing_ListWarehouses",
+    "api": "invoicing",
+    "method": "GET",
+    "path": "/api/invoicing/v1/warehouses",
+    "summary": "List Warehouses",
+    "description": "",
+    "tags": [
+      "WAREHOUSES"
+    ],
+    "parameters": [],
+    "body_schema": null,
+    "body_required": false,
+    "content_type": null,
+    "deprecated": false,
+    "doc_url": "https://www.holded.com/developers/v1/invoice-api/warehouses/list-warehouses"
+  },
+  "invoicing_PayDocument": {
+    "operation_id": "invoicing_PayDocument",
+    "api": "invoicing",
+    "method": "POST",
+    "path": "/api/invoicing/v1/documents/{docType}/{documentId}/pay",
+    "summary": "Pay Document",
+    "description": "Pay one specific document",
+    "tags": [
+      "DOCUMENTS"
+    ],
+    "parameters": [
+      {
+        "name": "docType",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "enum": [
+            "invoice",
+            "salesreceipt",
+            "creditnote",
+            "salesorder",
+            "proform",
+            "waybill",
+            "estimate",
+            "purchase",
+            "purchaseorder",
+            "purchaserefund"
+          ]
+        },
+        "description": "Document type. One of: invoice, salesreceipt, creditnote, salesorder, proform, waybill, estimate, purchase, purchaseorder, purchaserefund."
+      },
+      {
+        "name": "documentId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": ""
+      }
+    ],
+    "body_schema": {
+      "type": "object",
+      "properties": {
+        "date": {
+          "type": "integer"
+        },
+        "treasury": {
+          "type": "string",
+          "description": "Your treasury holded's id"
+        },
+        "desc": {
+          "type": "string"
+        },
+        "amount": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "date",
+        "amount"
+      ]
+    },
+    "body_required": false,
+    "content_type": "application/json",
+    "deprecated": false,
+    "doc_url": "https://www.holded.com/developers/v1/invoice-api/documents/pay-document"
+  },
+  "invoicing_SendDocument": {
+    "operation_id": "invoicing_SendDocument",
+    "api": "invoicing",
+    "method": "POST",
+    "path": "/api/invoicing/v1/documents/{docType}/{documentId}/send",
+    "summary": "Send Document",
+    "description": "Send a specific document by email.",
+    "tags": [
+      "DOCUMENTS"
+    ],
+    "parameters": [
+      {
+        "name": "docType",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "enum": [
+            "invoice",
+            "salesreceipt",
+            "creditnote",
+            "salesorder",
+            "proform",
+            "waybill",
+            "estimate",
+            "purchase",
+            "purchaseorder",
+            "purchaserefund"
+          ]
+        },
+        "description": "Document type. One of: invoice, salesreceipt, creditnote, salesorder, proform, waybill, estimate, purchase, purchaseorder, purchaserefund."
+      },
+      {
+        "name": "documentId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": ""
+      }
+    ],
+    "body_schema": {
+      "type": "object",
+      "required": [
+        "emails"
+      ],
+      "properties": {
+        "mailTemplateId": {
+          "type": "string"
+        },
+        "emails": {
+          "type": "string"
+        },
+        "subject": {
+          "type": "string",
+          "minLength": 10,
+          "description": "Minimum 10 characters"
+        },
+        "message": {
+          "type": "string",
+          "minLength": 20,
+          "description": "Minimum 20 characters"
+        },
+        "docIds": {
+          "type": "string"
+        }
+      }
+    },
+    "body_required": false,
+    "content_type": "application/json",
+    "deprecated": false,
+    "doc_url": "https://www.holded.com/developers/v1/invoice-api/documents/send-document"
+  },
+  "invoicing_ShipAllItems": {
+    "operation_id": "invoicing_ShipAllItems",
+    "api": "invoicing",
+    "method": "POST",
+    "path": "/api/invoicing/v1/documents/salesorder/{documentId}/shipall",
+    "summary": "Ship All Items",
+    "description": "Ship all the items of a specific sales order.",
+    "tags": [
+      "DOCUMENTS"
+    ],
+    "parameters": [
+      {
+        "name": "documentId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": ""
+      }
+    ],
+    "body_schema": null,
+    "body_required": false,
+    "content_type": null,
+    "deprecated": false,
+    "doc_url": "https://www.holded.com/developers/v1/invoice-api/documents/ship-all-items"
+  },
+  "invoicing_ShipItemsByLine": {
+    "operation_id": "invoicing_ShipItemsByLine",
+    "api": "invoicing",
+    "method": "POST",
+    "path": "/api/invoicing/v1/documents/salesorder/{documentId}/shipbylines",
+    "summary": "Ship items by line",
+    "description": "Ship a specific item of a specific sales order (itemLinePosition starts at 0).",
+    "tags": [
+      "DOCUMENTS"
+    ],
+    "parameters": [
+      {
+        "name": "documentId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": ""
+      }
+    ],
+    "body_schema": {
+      "type": "object",
+      "properties": {
+        "lines": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "itemLinePosition": {
+                "type": "integer"
+              },
+              "units": {
+                "type": "integer"
+              }
+            }
+          }
+        }
+      }
+    },
+    "body_required": false,
+    "content_type": "application/json",
+    "deprecated": false,
+    "doc_url": "https://www.holded.com/developers/v1/invoice-api/documents/ship-items-by-line"
+  },
+  "invoicing_ShippedUnitsByItem": {
+    "operation_id": "invoicing_ShippedUnitsByItem",
+    "api": "invoicing",
+    "method": "GET",
+    "path": "/api/invoicing/v1/documents/{docType}/{documentId}/shippeditems",
+    "summary": "Shipped units by item",
+    "description": "For each item included in a sales or purchase order, get the number of units shipped or recieved.",
+    "tags": [
+      "DOCUMENTS"
+    ],
+    "parameters": [
+      {
+        "name": "docType",
+        "in": "path",
+        "required": true,
+        "description": "docType should be one of: {salesorder, order}",
+        "schema": {
+          "type": "string",
+          "enum": [
+            "salesorder",
+            "order"
+          ]
+        }
+      },
+      {
+        "name": "documentId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": ""
+      }
+    ],
+    "body_schema": null,
+    "body_required": false,
+    "content_type": null,
+    "deprecated": false,
+    "doc_url": "https://www.holded.com/developers/v1/invoice-api/documents/shipped-units-by-item"
+  },
+  "invoicing_UpdateContact": {
+    "operation_id": "invoicing_UpdateContact",
+    "api": "invoicing",
+    "method": "PUT",
+    "path": "/api/invoicing/v1/contacts/{contactId}",
+    "summary": "Update Contact",
+    "description": "Update a specific contact.\n\nOnly the params included in the operation will update the contact.",
+    "tags": [
+      "CONTACTS"
+    ],
+    "parameters": [
+      {
+        "name": "contactId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": ""
+      }
+    ],
+    "body_schema": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "code": {
+          "type": "string"
+        },
+        "tradeName": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        },
+        "mobile": {
+          "type": "string"
+        },
+        "phone": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string",
+          "description": "Options: supplier, debtor, creditor, client, lead"
+        },
+        "isperson": {
+          "type": "boolean",
+          "description": "When true the contact is created as a Contact Person instead of as a Company"
+        },
+        "iban": {
+          "type": "string"
+        },
+        "swift": {
+          "type": "string"
+        },
+        "sepaRef": {
+          "type": "string"
+        },
+        "sepaDate": {
+          "type": "number"
+        },
+        "clientRecord": {
+          "type": "integer"
+        },
+        "supplierRecord": {
+          "type": "integer"
+        },
+        "groupId": {
+          "type": "string"
+        },
+        "taxOperation": {
+          "type": "string",
+          "description": "options for Spain (general, intra, impexp, nosujeto, receq, exento)"
+        },
+        "billAddress": {
+          "type": "object",
+          "properties": {
+            "address": {
+              "type": "string"
+            },
+            "city": {
+              "type": "string"
+            },
+            "postalCode": {
+              "type": "string"
+            },
+            "province": {
+              "type": "string"
+            },
+            "country": {
+              "type": "string"
+            },
+            "countryCode": {
+              "type": "string"
+            }
+          }
+        },
+        "shippingAddresses": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "address": {
+                "type": "string"
+              },
+              "city": {
+                "type": "string"
+              },
+              "postalCode": {
+                "type": "string"
+              },
+              "province": {
+                "type": "string"
+              },
+              "country": {
+                "type": "string"
+              },
+              "notes": {
+                "type": "string"
+              },
+              "privateNote": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "defaults": {
+          "type": "object",
+          "properties": {
+            "expensesAccountRecord": {
+              "type": "integer"
+            },
+            "expensesAccountName": {
+              "type": "string"
+            },
+            "salesAccountRecord": {
+              "type": "integer"
+            },
+            "salesAccountName": {
+              "type": "string"
+            },
+            "dueDays": {
+              "type": "integer"
+            },
+            "salesTax": {
+              "type": "integer"
+            },
+            "purchasesTax": {
+              "type": "integer"
+            },
+            "accumulateInForm347": {
+              "type": "string",
+              "description": "Yes or No"
+            },
+            "paymentMethod": {
+              "type": "string",
+              "description": "Should be a valid ID."
+            },
+            "discount": {
+              "type": "integer"
+            },
+            "currency": {
+              "type": "string",
+              "description": "Currency ISO code in lowercase (e.g., eur = Euro, usd = U.S. Dollar, etc )"
+            },
+            "language": {
+              "type": "string",
+              "description": "options (es = spanish, en = english, fr = french, de = german, it = italian, ca = catalan, eu = euskera)"
+            },
+            "showTradeNameOnDocs": {
+              "type": "boolean"
+            },
+            "showCountryOnDocs": {
+              "type": "boolean"
+            }
+          }
+        },
+        "socialNetworks": {
+          "type": "object",
+          "properties": {
+            "website": {
+              "type": "string"
+            }
+          }
+        },
+        "numberingSeries": {
+          "type": "object",
+          "description": "The value of each document should be a valid ID.",
+          "properties": {
+            "invoice": {
+              "type": "string"
+            },
+            "receipt": {
+              "type": "string"
+            },
+            "salesOrder": {
+              "type": "string"
+            },
+            "purchasesOrder": {
+              "type": "string"
+            },
+            "proform": {
+              "type": "string"
+            },
+            "waybill": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "body_required": false,
+    "content_type": "application/json",
+    "deprecated": false,
+    "doc_url": "https://www.holded.com/developers/v1/invoice-api/contacts/update-contact"
+  },
+  "invoicing_UpdateContactGroup": {
+    "operation_id": "invoicing_UpdateContactGroup",
+    "api": "invoicing",
+    "method": "PUT",
+    "path": "/api/invoicing/v1/contacts/groups/{groupId}",
+    "summary": "Update Contact Group",
+    "description": "",
+    "tags": [
+      "CONTACT GROUPS"
+    ],
+    "parameters": [
+      {
+        "name": "groupId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": ""
+      }
+    ],
+    "body_schema": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "desc": {
+          "type": "string"
+        },
+        "color": {
+          "type": "string"
+        }
+      }
+    },
+    "body_required": false,
+    "content_type": "application/json",
+    "deprecated": false,
+    "doc_url": "https://www.holded.com/developers/v1/invoice-api/contact-groups/update-contact-group"
+  },
+  "invoicing_UpdateDocument": {
+    "operation_id": "invoicing_UpdateDocument",
+    "api": "invoicing",
+    "method": "PUT",
+    "path": "/api/invoicing/v1/documents/{docType}/{documentId}",
+    "summary": "Update Document",
+    "description": "Update a specific document. {lotSku} field is only needed when {kind} is lots.",
+    "tags": [
+      "DOCUMENTS"
+    ],
+    "parameters": [
+      {
+        "name": "docType",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "enum": [
+            "invoice",
+            "salesreceipt",
+            "creditnote",
+            "salesorder",
+            "proform",
+            "waybill",
+            "estimate",
+            "purchase",
+            "purchaseorder",
+            "purchaserefund"
+          ]
+        },
+        "description": "Document type. One of: invoice, salesreceipt, creditnote, salesorder, proform, waybill, estimate, purchase, purchaseorder, purchaserefund."
+      },
+      {
+        "name": "documentId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": ""
+      }
+    ],
+    "body_schema": {
+      "type": "object",
+      "properties": {
+        "desc": {
+          "type": "string"
+        },
+        "notes": {
+          "type": "string"
+        },
+        "language": {
+          "type": "string"
+        },
+        "date": {
+          "type": "integer"
+        },
+        "paymentMethod": {
+          "type": "string"
+        },
+        "warehouseId": {
+          "type": "string",
+          "description": "Choose the warehouse for your salesorder, purchaseorder or waybill."
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "desc": {
+                "type": "string"
+              },
+              "subtotal": {
+                "type": "integer"
+              },
+              "tax": {
+                "type": "integer"
+              },
+              "tags": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "units": {
+                "type": "integer"
+              },
+              "discount": {
+                "type": "integer"
+              },
+              "accountingAccountId": {
+                "type": "string"
+              },
+              "kind": {
+                "type": "string"
+              },
+              "sku": {
+                "type": "string"
+              },
+              "lotSku": {
+                "type": "string"
+              },
+              "supplied": {
+                "type": "string",
+                "description": "Optional (Yes/No)"
+              }
+            }
+          }
+        },
+        "salesChannelId": {
+          "type": "string"
+        },
+        "expAccountId": {
+          "type": "string"
+        },
+        "customFields": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "field": {
+                "type": "string"
+              },
+              "value": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    "body_required": false,
+    "content_type": "application/json",
+    "deprecated": false,
+    "doc_url": "https://www.holded.com/developers/v1/invoice-api/documents/update-document"
+  },
+  "invoicing_UpdateDocumentPipeline": {
+    "operation_id": "invoicing_UpdateDocumentPipeline",
+    "api": "invoicing",
+    "method": "POST",
+    "path": "/api/invoicing/v1/documents/{docType}/{documentId}/pipeline/set",
+    "summary": "Update pipeline from specific document.",
+    "description": "Update pipeline from specific document.",
+    "tags": [
+      "DOCUMENTS"
+    ],
+    "parameters": [
+      {
+        "name": "docType",
+        "in": "path",
+        "description": "docType should be one of: {salesorder, waybill}",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "enum": [
+            "salesorder",
+            "waybill"
+          ]
+        }
+      },
+      {
+        "name": "documentId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": ""
+      }
+    ],
+    "body_schema": {
+      "type": "object",
+      "properties": {
+        "pipeline": {
+          "type": "string"
+        }
+      }
+    },
+    "body_required": false,
+    "content_type": "application/json",
+    "deprecated": false,
+    "doc_url": "https://www.holded.com/developers/v1/invoice-api/documents/update-document-pipeline"
+  },
+  "invoicing_UpdateExpensesAccount": {
+    "operation_id": "invoicing_UpdateExpensesAccount",
+    "api": "invoicing",
+    "method": "PUT",
+    "path": "/api/invoicing/v1/expensesaccounts/{expensesAccountId}",
+    "summary": "Update Expenses Account",
+    "description": "Update a specific expenses account.",
+    "tags": [
+      "EXPENSES ACCOUNTS"
+    ],
+    "parameters": [
+      {
+        "name": "expensesAccountId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": ""
+      }
+    ],
+    "body_schema": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "desc": {
+          "type": "string"
+        },
+        "color": {
+          "type": "string"
+        }
+      }
+    },
+    "body_required": false,
+    "content_type": "application/json",
+    "deprecated": false,
+    "doc_url": "https://www.holded.com/developers/v1/invoice-api/expenses-accounts/update-expenses-account"
+  },
+  "invoicing_UpdateNumberingSerie": {
+    "operation_id": "invoicing_UpdateNumberingSerie",
+    "api": "invoicing",
+    "method": "PUT",
+    "path": "/api/invoicing/v1/numberingseries/{type}/{numberingSeriesId}",
+    "summary": "Update Numbering Serie",
+    "description": "",
+    "tags": [
+      "NUMBERING SERIES"
+    ],
+    "parameters": [
+      {
+        "name": "type",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": ""
+      },
+      {
+        "name": "numberingSeriesId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": ""
+      }
+    ],
+    "body_schema": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "format": {
+          "type": "string"
+        },
+        "last": {
+          "type": "string"
+        }
+      }
+    },
+    "body_required": false,
+    "content_type": "application/json",
+    "deprecated": false,
+    "doc_url": "https://www.holded.com/developers/v1/invoice-api/numbering-series/update-numbering-serie"
+  },
+  "invoicing_UpdatePayment": {
+    "operation_id": "invoicing_UpdatePayment",
+    "api": "invoicing",
+    "method": "PUT",
+    "path": "/api/invoicing/v1/payments/{paymentId}",
+    "summary": "Update Payment",
+    "description": "",
+    "tags": [
+      "PAYMENTS"
+    ],
+    "parameters": [
+      {
+        "name": "paymentId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": ""
+      }
+    ],
+    "body_schema": {
+      "type": "object",
+      "properties": {
+        "bankId": {
+          "type": "string"
+        },
+        "contactId": {
+          "type": "string"
+        },
+        "amount": {
+          "type": "integer"
+        },
+        "desc": {
+          "type": "string"
+        },
+        "date": {
+          "type": "integer"
+        }
+      }
+    },
+    "body_required": false,
+    "content_type": "application/json",
+    "deprecated": false,
+    "doc_url": "https://www.holded.com/developers/v1/invoice-api/payments/update-payment"
+  },
+  "invoicing_UpdateProduct": {
+    "operation_id": "invoicing_UpdateProduct",
+    "api": "invoicing",
+    "method": "PUT",
+    "path": "/api/invoicing/v1/products/{productId}",
+    "summary": "Update Product",
+    "description": "",
+    "tags": [
+      "PRODUCTS"
+    ],
+    "parameters": [
+      {
+        "name": "productId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": ""
+      }
+    ],
+    "body_schema": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "desc": {
+          "type": "string"
+        },
+        "tax": {
+          "type": "integer"
+        },
+        "subtotal": {
+          "type": "number"
+        },
+        "barcode": {
+          "type": "string"
+        },
+        "sku": {
+          "type": "string"
+        },
+        "cost": {
+          "type": "number"
+        },
+        "purchasePrice": {
+          "type": "number"
+        },
+        "weight": {
+          "type": "number"
+        }
+      }
+    },
+    "body_required": false,
+    "content_type": "application/json",
+    "deprecated": false,
+    "doc_url": "https://www.holded.com/developers/v1/invoice-api/products/update-product"
+  },
+  "invoicing_UpdateProductStock": {
+    "operation_id": "invoicing_UpdateProductStock",
+    "api": "invoicing",
+    "method": "PUT",
+    "path": "/api/invoicing/v1/products/{productId}/stock",
+    "summary": "Update Product stock",
+    "description": "",
+    "tags": [
+      "PRODUCTS"
+    ],
+    "parameters": [
+      {
+        "name": "productId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": ""
+      }
+    ],
+    "body_schema": {
+      "type": "object",
+      "properties": {
+        "stock": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "description": "WarehouseId's",
+            "additionalProperties": {
+              "type": "number",
+              "description": "ProductId or VariantId followed by stock to update",
+              "default": {
+                "ProductId": 1
+              }
+            }
+          }
+        }
+      }
+    },
+    "body_required": false,
+    "content_type": "application/json",
+    "deprecated": false,
+    "doc_url": "https://www.holded.com/developers/v1/invoice-api/products/update-product-stock"
+  },
+  "invoicing_UpdateSalesChannel": {
+    "operation_id": "invoicing_UpdateSalesChannel",
+    "api": "invoicing",
+    "method": "PUT",
+    "path": "/api/invoicing/v1/saleschannels/{salesChannelId}",
+    "summary": "Update Sales Channel",
+    "description": "",
+    "tags": [
+      "SALES CHANNELS"
+    ],
+    "parameters": [
+      {
+        "name": "salesChannelId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": ""
+      }
+    ],
+    "body_schema": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "desc": {
+          "type": "string"
+        },
+        "color": {
+          "type": "string"
+        }
+      }
+    },
+    "body_required": false,
+    "content_type": "application/json",
+    "deprecated": false,
+    "doc_url": "https://www.holded.com/developers/v1/invoice-api/sales-channels/update-sales-channel"
+  },
+  "invoicing_UpdateService": {
+    "operation_id": "invoicing_UpdateService",
+    "api": "invoicing",
+    "method": "PUT",
+    "path": "/api/invoicing/v1/services/{serviceId}",
+    "summary": "Update Service",
+    "description": "",
+    "tags": [
+      "SERVICES"
+    ],
+    "parameters": [
+      {
+        "name": "serviceId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": ""
+      }
+    ],
+    "body_schema": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "desc": {
+          "type": "string"
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "tax": {
+          "type": "number"
+        },
+        "subtotal": {
+          "type": "integer"
+        },
+        "salesChannelId": {
+          "type": "string"
+        },
+        "cost": {
+          "type": "number"
+        }
+      }
+    },
+    "body_required": false,
+    "content_type": "application/json",
+    "deprecated": false,
+    "doc_url": "https://www.holded.com/developers/v1/invoice-api/services/update-service"
+  },
+  "invoicing_UpdateTrackingInfo": {
+    "operation_id": "invoicing_UpdateTrackingInfo",
+    "api": "invoicing",
+    "method": "POST",
+    "path": "/api/invoicing/v1/documents/{docType}/{documentId}/updatetracking",
+    "summary": "Update tracking info from specific document.",
+    "description": "Update tracking info from specific document.",
+    "tags": [
+      "DOCUMENTS"
+    ],
+    "parameters": [
+      {
+        "name": "docType",
+        "in": "path",
+        "required": true,
+        "description": "docType should be one of: {salesorder, waybill}",
+        "schema": {
+          "type": "string",
+          "enum": [
+            "salesorder",
+            "waybill"
+          ]
+        }
+      },
+      {
+        "name": "documentId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": ""
+      }
+    ],
+    "body_schema": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string",
+          "example": "correos",
+          "description": "key should be one of: {mrw, ups, fedex,tnt, seur, nacex, correos, asm, uspostalservice, dbschenker, royalmail, bluedart, palletways, correosexpress, tourline, other (for custom)}"
+        },
+        "name": {
+          "type": "string",
+          "example": "correos",
+          "description": "name should be one of: {mrw, ups, fedex,tnt, seur, nacex, correos, asm, United States Postal Service, dbschenker, royalmail, bluedart, palletways, correosexpress, tourline, custom name (for custom)}"
+        },
+        "num": {
+          "type": "string",
+          "example": "1,2-3",
+          "description": "Tracking numbers. Can be added more numbers separated by , or -"
+        },
+        "pickUpDate": {
+          "type": "string",
+          "example": "01/01/2020",
+          "description": "pickUpDate should be formated like DD/MM/YYYY"
+        },
+        "deliveryDate": {
+          "type": "string",
+          "example": "01/01/2020",
+          "description": "deliveryDate should be formated like DD/MM/YYYY"
+        },
+        "notes": {
+          "type": "string",
+          "example": "note",
+          "description": "notes for the tracking"
+        }
+      }
+    },
+    "body_required": false,
+    "content_type": "application/json",
+    "deprecated": false,
+    "doc_url": "https://www.holded.com/developers/v1/invoice-api/documents/update-tracking-info"
+  },
+  "invoicing_UpdateWarehouse": {
+    "operation_id": "invoicing_UpdateWarehouse",
+    "api": "invoicing",
+    "method": "PUT",
+    "path": "/api/invoicing/v1/warehouses/{warehouseId}",
+    "summary": "Update Warehouse",
+    "description": "",
+    "tags": [
+      "WAREHOUSES"
+    ],
+    "parameters": [
+      {
+        "name": "warehouseId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": ""
+      }
+    ],
+    "body_schema": {
+      "title": "Warehouse Input",
+      "description": "The properties that are allowed when creating or updating a Warehouse.",
+      "allOf": [
+        {
+          "title": "Warehouse Common",
+          "description": "The properties that are shared amongst all versions of the Warehouse model.",
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "userId": {
+              "type": "string"
+            },
+            "name": {
+              "type": "string"
+            },
+            "email": {
+              "type": "string"
+            },
+            "phone": {
+              "type": "string"
+            },
+            "mobile": {
+              "type": "string"
+            },
+            "address": {
+              "type": "object",
+              "properties": {
+                "address": {
+                  "type": "string"
+                },
+                "city": {
+                  "type": "string"
+                },
+                "postalCode": {
+                  "type": "string"
+                },
+                "province": {
+                  "type": "string"
+                },
+                "country": {
+                  "type": "string"
+                },
+                "countryCode": {
+                  "type": "string"
+                }
+              }
+            },
+            "default": {
+              "type": "boolean"
+            },
+            "warehouseRecord": {
+              "type": "integer"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "properties": {}
+        }
+      ]
+    },
+    "body_required": false,
+    "content_type": "application/json",
+    "deprecated": false,
+    "doc_url": "https://www.holded.com/developers/v1/invoice-api/warehouses/update-warehouse"
+  },
+  "projects_CreateProject": {
+    "operation_id": "projects_CreateProject",
+    "api": "projects",
+    "method": "POST",
+    "path": "/api/projects/v1/projects",
+    "summary": "Create Project",
+    "description": "Create a new project.",
+    "tags": [
+      "PROJECTS"
+    ],
+    "parameters": [],
+    "body_schema": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "name"
+      ]
+    },
+    "body_required": false,
+    "content_type": "application/json",
+    "deprecated": false,
+    "doc_url": "https://www.holded.com/developers/v1/projects-api/projects/create-project"
+  },
+  "projects_CreateProjectTime": {
+    "operation_id": "projects_CreateProjectTime",
+    "api": "projects",
+    "method": "POST",
+    "path": "/api/projects/v1/projects/{projectId}/times",
+    "summary": "Create Project Time",
+    "description": "Create a new time tracking.",
+    "tags": [
+      "TIME TRACKING"
+    ],
+    "parameters": [
+      {
+        "name": "projectId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": ""
+      }
+    ],
+    "body_schema": {
+      "type": "object",
+      "properties": {
+        "duration": {
+          "type": "integer"
+        },
+        "desc": {
+          "type": "string"
+        },
+        "costHour": {
+          "type": "integer"
+        },
+        "userId": {
+          "type": "string"
+        },
+        "taskId": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "duration",
+        "costHour"
+      ]
+    },
+    "body_required": false,
+    "content_type": "application/json",
+    "deprecated": false,
+    "doc_url": "https://www.holded.com/developers/v1/projects-api/time-tracking/create-project-time"
+  },
+  "projects_CreateTask": {
+    "operation_id": "projects_CreateTask",
+    "api": "projects",
+    "method": "POST",
+    "path": "/api/projects/v1/tasks",
+    "summary": "Create Task",
+    "description": "Create a new task.",
+    "tags": [
+      "TASKS"
+    ],
+    "parameters": [],
+    "body_schema": {
+      "type": "object",
+      "properties": {
+        "projectId": {
+          "type": "string"
+        },
+        "listId": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "projectId",
+        "listId",
+        "name"
+      ]
+    },
+    "body_required": false,
+    "content_type": "application/json",
+    "deprecated": false,
+    "doc_url": "https://www.holded.com/developers/v1/projects-api/tasks/create-task"
+  },
+  "projects_DeleteProject": {
+    "operation_id": "projects_DeleteProject",
+    "api": "projects",
+    "method": "DELETE",
+    "path": "/api/projects/v1/projects/{projectId}",
+    "summary": "Delete Project",
+    "description": "Delete a specific project.",
+    "tags": [
+      "PROJECTS"
+    ],
+    "parameters": [
+      {
+        "name": "projectId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": ""
+      }
+    ],
+    "body_schema": null,
+    "body_required": false,
+    "content_type": null,
+    "deprecated": false,
+    "doc_url": "https://www.holded.com/developers/v1/projects-api/projects/delete-project"
+  },
+  "projects_DeleteProjectTime": {
+    "operation_id": "projects_DeleteProjectTime",
+    "api": "projects",
+    "method": "DELETE",
+    "path": "/api/projects/v1/projects/{projectId}/times/{timeTrackingId}",
+    "summary": "Delete Project Time",
+    "description": "Delete a specific time tracking.",
+    "tags": [
+      "TIME TRACKING"
+    ],
+    "parameters": [
+      {
+        "name": "projectId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": ""
+      },
+      {
+        "name": "timeTrackingId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": ""
+      }
+    ],
+    "body_schema": null,
+    "body_required": false,
+    "content_type": null,
+    "deprecated": false,
+    "doc_url": "https://www.holded.com/developers/v1/projects-api/time-tracking/delete-project-time"
+  },
+  "projects_DeleteTask": {
+    "operation_id": "projects_DeleteTask",
+    "api": "projects",
+    "method": "DELETE",
+    "path": "/api/projects/v1/tasks/{taskId}",
+    "summary": "Delete Task",
+    "description": "Delete a specific task.",
+    "tags": [
+      "TASKS"
+    ],
+    "parameters": [
+      {
+        "name": "taskId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": ""
+      }
+    ],
+    "body_schema": null,
+    "body_required": false,
+    "content_type": null,
+    "deprecated": false,
+    "doc_url": "https://www.holded.com/developers/v1/projects-api/tasks/delete-task"
+  },
+  "projects_GetProject": {
+    "operation_id": "projects_GetProject",
+    "api": "projects",
+    "method": "GET",
+    "path": "/api/projects/v1/projects/{projectId}",
+    "summary": "Get Project",
+    "description": "Get a specific payment.",
+    "tags": [
+      "PROJECTS"
+    ],
+    "parameters": [
+      {
+        "name": "projectId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": ""
+      }
+    ],
+    "body_schema": null,
+    "body_required": false,
+    "content_type": null,
+    "deprecated": false,
+    "doc_url": "https://www.holded.com/developers/v1/projects-api/projects/get-project"
+  },
+  "projects_GetProjectSummary": {
+    "operation_id": "projects_GetProjectSummary",
+    "api": "projects",
+    "method": "GET",
+    "path": "/api/projects/v1/projects/{projectId}/summary",
+    "summary": "GetProjectSummary",
+    "description": "Get a specific project summary.",
+    "tags": [
+      "PROJECTS"
+    ],
+    "parameters": [
+      {
+        "name": "projectId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": ""
+      }
+    ],
+    "body_schema": null,
+    "body_required": false,
+    "content_type": null,
+    "deprecated": false,
+    "doc_url": "https://www.holded.com/developers/v1/projects-api/projects/get-projects-projectid-summary"
+  },
+  "projects_GetProjectTime": {
+    "operation_id": "projects_GetProjectTime",
+    "api": "projects",
+    "method": "GET",
+    "path": "/api/projects/v1/projects/{projectId}/times/{timeTrackingId}",
+    "summary": "GetProjectTimes",
+    "description": "Get a specific time tracking.",
+    "tags": [
+      "TIME TRACKING"
+    ],
+    "parameters": [
+      {
+        "name": "projectId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": ""
+      },
+      {
+        "name": "timeTrackingId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": ""
+      }
+    ],
+    "body_schema": null,
+    "body_required": false,
+    "content_type": null,
+    "deprecated": false,
+    "doc_url": "https://www.holded.com/developers/v1/projects-api/time-tracking/getprojecttimes"
+  },
+  "projects_GetProjectTimes": {
+    "operation_id": "projects_GetProjectTimes",
+    "api": "projects",
+    "method": "GET",
+    "path": "/api/projects/v1/projects/{projectId}/times",
+    "summary": "Get Project Times",
+    "description": "Get all your times tracking by project.",
+    "tags": [
+      "TIME TRACKING"
+    ],
+    "parameters": [
+      {
+        "name": "projectId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": ""
+      }
+    ],
+    "body_schema": null,
+    "body_required": false,
+    "content_type": null,
+    "deprecated": false,
+    "doc_url": "https://www.holded.com/developers/v1/projects-api/time-tracking/get-project-times"
+  },
+  "projects_GetTask": {
+    "operation_id": "projects_GetTask",
+    "api": "projects",
+    "method": "GET",
+    "path": "/api/projects/v1/tasks/{taskId}",
+    "summary": "Get Task",
+    "description": "Get a specific task.",
+    "tags": [
+      "TASKS"
+    ],
+    "parameters": [
+      {
+        "name": "taskId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": ""
+      }
+    ],
+    "body_schema": null,
+    "body_required": false,
+    "content_type": null,
+    "deprecated": false,
+    "doc_url": "https://www.holded.com/developers/v1/projects-api/tasks/get-task"
+  },
+  "projects_ListProjects": {
+    "operation_id": "projects_ListProjects",
+    "api": "projects",
+    "method": "GET",
+    "path": "/api/projects/v1/projects",
+    "summary": "List Projects",
+    "description": "Get all your projects.",
+    "tags": [
+      "PROJECTS"
+    ],
+    "parameters": [],
+    "body_schema": null,
+    "body_required": false,
+    "content_type": null,
+    "deprecated": false,
+    "doc_url": "https://www.holded.com/developers/v1/projects-api/projects/list-projects"
+  },
+  "projects_ListTasks": {
+    "operation_id": "projects_ListTasks",
+    "api": "projects",
+    "method": "GET",
+    "path": "/api/projects/v1/tasks",
+    "summary": "List Tasks",
+    "description": "Get all your tasks.",
+    "tags": [
+      "TASKS"
+    ],
+    "parameters": [],
+    "body_schema": null,
+    "body_required": false,
+    "content_type": null,
+    "deprecated": false,
+    "doc_url": "https://www.holded.com/developers/v1/projects-api/tasks/list-tasks"
+  },
+  "projects_ListTimes": {
+    "operation_id": "projects_ListTimes",
+    "api": "projects",
+    "method": "GET",
+    "path": "/api/projects/v1/projects/times",
+    "summary": "List Times",
+    "description": "List time trackings in projects not archived from 18 months on",
+    "tags": [
+      "TIME TRACKING"
+    ],
+    "parameters": [
+      {
+        "name": "start",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "integer"
+        },
+        "description": ""
+      },
+      {
+        "name": "end",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "integer"
+        },
+        "description": ""
+      },
+      {
+        "name": "archived",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "boolean"
+        },
+        "description": ""
+      }
+    ],
+    "body_schema": null,
+    "body_required": false,
+    "content_type": null,
+    "deprecated": false,
+    "doc_url": "https://www.holded.com/developers/v1/projects-api/time-tracking/list-times"
+  },
+  "projects_UpdateProject": {
+    "operation_id": "projects_UpdateProject",
+    "api": "projects",
+    "method": "PUT",
+    "path": "/api/projects/v1/projects/{projectId}",
+    "summary": "Update Project",
+    "description": "Update a specific project.\n\nOnly the params included in the operation will update the project.",
+    "tags": [
+      "PROJECTS"
+    ],
+    "parameters": [
+      {
+        "name": "projectId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": ""
+      }
+    ],
+    "body_schema": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "desc": {
+          "type": "string"
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "contactName": {
+          "type": "string"
+        },
+        "date": {
+          "type": "integer"
+        },
+        "dueDate": {
+          "type": "integer"
+        },
+        "status": {
+          "type": "integer"
+        },
+        "lists": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "key": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "desc": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "billable": {
+          "type": "integer"
+        },
+        "price": {
+          "type": "integer"
+        },
+        "labels": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "color": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    "body_required": false,
+    "content_type": "application/json",
+    "deprecated": false,
+    "doc_url": "https://www.holded.com/developers/v1/projects-api/projects/update-project"
+  },
+  "projects_UpdateProjectTime": {
+    "operation_id": "projects_UpdateProjectTime",
+    "api": "projects",
+    "method": "PUT",
+    "path": "/api/projects/v1/projects/{projectId}/times/{timeTrackingId}",
+    "summary": "Update Project Time",
+    "description": "Update a specific time tracking.\n\nOnly the params included in the operation will update the time tracking.",
+    "tags": [
+      "TIME TRACKING"
+    ],
+    "parameters": [
+      {
+        "name": "projectId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": ""
+      },
+      {
+        "name": "timeTrackingId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": ""
+      }
+    ],
+    "body_schema": {
+      "type": "object",
+      "properties": {
+        "duration": {
+          "type": "integer"
+        },
+        "desc": {
+          "type": "string"
+        },
+        "costHour": {
+          "type": "integer"
+        },
+        "userId": {
+          "type": "string"
+        },
+        "taskId": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "duration",
+        "costHour"
+      ]
+    },
+    "body_required": false,
+    "content_type": "application/json",
+    "deprecated": false,
+    "doc_url": "https://www.holded.com/developers/v1/projects-api/time-tracking/update-project-time"
+  },
+  "team_CreateEmployee": {
+    "operation_id": "team_CreateEmployee",
+    "api": "team",
+    "method": "POST",
+    "path": "/api/team/v1/employees",
+    "summary": "Create a new employee",
+    "description": "Create a new employee in you app.",
+    "tags": [
+      "Employees"
+    ],
+    "parameters": [],
+    "body_schema": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "lastName": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        },
+        "sendInvite": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "name",
+        "lastName",
+        "email"
+      ]
+    },
+    "body_required": false,
+    "content_type": "application/json",
+    "deprecated": false,
+    "doc_url": "https://www.holded.com/developers/v1/team-api/employees/createemployee"
+  },
+  "team_CreateEmployeeTime": {
+    "operation_id": "team_CreateEmployeeTime",
+    "api": "team",
+    "method": "POST",
+    "path": "/api/team/v1/employees/{employeeId}/times",
+    "summary": "Create a time-tracking for an specific employee",
+    "description": "Create a time-tracking for an specific employee.",
+    "tags": [
+      "Employees' time-tracking"
+    ],
+    "parameters": [
+      {
+        "name": "employeeId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": ""
+      }
+    ],
+    "body_schema": {
+      "type": "object",
+      "properties": {
+        "startTmp": {
+          "type": "string"
+        },
+        "endTmp": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "startTmp",
+        "endTmp"
+      ]
+    },
+    "body_required": false,
+    "content_type": "application/json",
+    "deprecated": false,
+    "doc_url": "https://www.holded.com/developers/v1/team-api/employees-time-tracking/createemployeetime"
+  },
+  "team_DeleteEmployee": {
+    "operation_id": "team_DeleteEmployee",
+    "api": "team",
+    "method": "DELETE",
+    "path": "/api/team/v1/employees/{employeeId}",
+    "summary": "Delete an Employee",
+    "description": "Delete an employee.\n",
+    "tags": [
+      "Employees"
+    ],
+    "parameters": [
+      {
+        "name": "employeeId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": ""
+      }
+    ],
+    "body_schema": null,
+    "body_required": false,
+    "content_type": null,
+    "deprecated": false,
+    "doc_url": "https://www.holded.com/developers/v1/team-api/employees/delete-a-employee"
+  },
+  "team_DeleteTime": {
+    "operation_id": "team_DeleteTime",
+    "api": "team",
+    "method": "DELETE",
+    "path": "/api/team/v1/employees/times/{employeeTimeId}",
+    "summary": "Delete a time-tracking",
+    "description": "Delete a time-tracking.\n",
+    "tags": [
+      "Employees' time-tracking"
+    ],
+    "parameters": [
+      {
+        "name": "employeeTimeId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": ""
+      }
+    ],
+    "body_schema": null,
+    "body_required": false,
+    "content_type": null,
+    "deprecated": false,
+    "doc_url": "https://www.holded.com/developers/v1/team-api/employees-time-tracking/deletetime"
+  },
+  "team_EmployeeClockin": {
+    "operation_id": "team_EmployeeClockin",
+    "api": "team",
+    "method": "POST",
+    "path": "/api/team/v1/employees/{employeeId}/times/clockin",
+    "summary": "Employee clock-in",
+    "description": "Start counting employee time-tracking.\n",
+    "tags": [
+      "Employees' time-tracking"
+    ],
+    "parameters": [
+      {
+        "name": "employeeId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": ""
+      }
+    ],
+    "body_schema": {
+      "type": "object",
+      "properties": {
+        "location": {
+          "type": "string"
+        }
+      }
+    },
+    "body_required": false,
+    "content_type": "application/json",
+    "deprecated": false,
+    "doc_url": "https://www.holded.com/developers/v1/team-api/employees-time-tracking/employeeclockin"
+  },
+  "team_EmployeeClockout": {
+    "operation_id": "team_EmployeeClockout",
+    "api": "team",
+    "method": "POST",
+    "path": "/api/team/v1/employees/{employeeId}/times/clockout",
+    "summary": "Employee clock-out",
+    "description": "End counting employee time-tracking.\n",
+    "tags": [
+      "Employees' time-tracking"
+    ],
+    "parameters": [
+      {
+        "name": "employeeId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": ""
+      }
+    ],
+    "body_schema": {
+      "type": "object",
+      "properties": {
+        "latitude": {
+          "type": "string",
+          "description": "Eg. -7.45556"
+        },
+        "longitude": {
+          "type": "string",
+          "description": "Eg. 55.55765"
+        }
+      }
+    },
+    "body_required": false,
+    "content_type": "application/json",
+    "deprecated": false,
+    "doc_url": "https://www.holded.com/developers/v1/team-api/employees-time-tracking/employeeclockout"
+  },
+  "team_EmployeePause": {
+    "operation_id": "team_EmployeePause",
+    "api": "team",
+    "method": "POST",
+    "path": "/api/team/v1/employees/{employeeId}/times/pause",
+    "summary": "Employee time-tracking pause",
+    "description": "Pause employee time-tracking.\n",
+    "tags": [
+      "Employees' time-tracking"
+    ],
+    "parameters": [
+      {
+        "name": "employeeId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": ""
+      }
+    ],
+    "body_schema": {
+      "type": "object",
+      "properties": {
+        "latitude": {
+          "type": "string",
+          "description": "Eg. -7.45556"
+        },
+        "longitude": {
+          "type": "string",
+          "description": "Eg. 55.55765"
+        }
+      }
+    },
+    "body_required": false,
+    "content_type": "application/json",
+    "deprecated": false,
+    "doc_url": "https://www.holded.com/developers/v1/team-api/employees-time-tracking/employeepause"
+  },
+  "team_EmployeeUnpause": {
+    "operation_id": "team_EmployeeUnpause",
+    "api": "team",
+    "method": "POST",
+    "path": "/api/team/v1/employees/{employeeId}/times/unpause",
+    "summary": "Employee time-tracking unpause",
+    "description": "Unpause employee time-tracking.\n",
+    "tags": [
+      "Employees' time-tracking"
+    ],
+    "parameters": [
+      {
+        "name": "employeeId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": ""
+      }
+    ],
+    "body_schema": {
+      "type": "object",
+      "properties": {
+        "latitude": {
+          "type": "string",
+          "description": "Eg. -7.45556"
+        },
+        "longitude": {
+          "type": "string",
+          "description": "Eg. 55.55765"
+        }
+      }
+    },
+    "body_required": false,
+    "content_type": "application/json",
+    "deprecated": false,
+    "doc_url": "https://www.holded.com/developers/v1/team-api/employees-time-tracking/employeeunpause"
+  },
+  "team_GetEmployee": {
+    "operation_id": "team_GetEmployee",
+    "api": "team",
+    "method": "GET",
+    "path": "/api/team/v1/employees/{employeeId}",
+    "summary": "Get an Employee",
+    "description": "List all the employees you have in your app.\n",
+    "tags": [
+      "Employees"
+    ],
+    "parameters": [
+      {
+        "name": "employeeId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": ""
+      }
+    ],
+    "body_schema": null,
+    "body_required": false,
+    "content_type": null,
+    "deprecated": false,
+    "doc_url": "https://www.holded.com/developers/v1/team-api/employees/get-a-employee"
+  },
+  "team_GetTime": {
+    "operation_id": "team_GetTime",
+    "api": "team",
+    "method": "GET",
+    "path": "/api/team/v1/employees/times/{employeeTimeId}",
+    "summary": "Get a specific time-tracking",
+    "description": "Get a specific time-tracking by Id.\n",
+    "tags": [
+      "Employees' time-tracking"
+    ],
+    "parameters": [
+      {
+        "name": "employeeTimeId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": ""
+      }
+    ],
+    "body_schema": null,
+    "body_required": false,
+    "content_type": null,
+    "deprecated": false,
+    "doc_url": "https://www.holded.com/developers/v1/team-api/employees-time-tracking/gettime"
+  },
+  "team_ListEmployeeTimes": {
+    "operation_id": "team_ListEmployeeTimes",
+    "api": "team",
+    "method": "GET",
+    "path": "/api/team/v1/employees/{employeeId}/times",
+    "summary": "List all the time-trackings of a single employee",
+    "description": "List all the time-trackings of a single employee.\n",
+    "tags": [
+      "Employees' time-tracking"
+    ],
+    "parameters": [
+      {
+        "name": "employeeId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": ""
+      }
+    ],
+    "body_schema": null,
+    "body_required": false,
+    "content_type": null,
+    "deprecated": false,
+    "doc_url": "https://www.holded.com/developers/v1/team-api/employees-time-tracking/listemployeetimes"
+  },
+  "team_ListEmployees": {
+    "operation_id": "team_ListEmployees",
+    "api": "team",
+    "method": "GET",
+    "path": "/api/team/v1/employees",
+    "summary": "List all your employees",
+    "description": "List all the employees you have in your app.\n",
+    "tags": [
+      "Employees"
+    ],
+    "parameters": [
+      {
+        "in": "query",
+        "name": "page",
+        "description": "the response is paginated and limited to 500 employees,",
+        "required": false,
+        "schema": {
+          "type": "number"
+        }
+      }
+    ],
+    "body_schema": null,
+    "body_required": false,
+    "content_type": null,
+    "deprecated": false,
+    "doc_url": "https://www.holded.com/developers/v1/team-api/employees/listemployees"
+  },
+  "team_ListTimes": {
+    "operation_id": "team_ListTimes",
+    "api": "team",
+    "method": "GET",
+    "path": "/api/team/v1/employees/times",
+    "summary": "List all the time-trackings of all your employees",
+    "description": "List all the time-trackings of all your employees.\n",
+    "tags": [
+      "Employees' time-tracking"
+    ],
+    "parameters": [
+      {
+        "in": "query",
+        "name": "page",
+        "description": "the response is paginated and limited to 500 employees,",
+        "required": false,
+        "schema": {
+          "type": "number"
+        }
+      }
+    ],
+    "body_schema": null,
+    "body_required": false,
+    "content_type": null,
+    "deprecated": false,
+    "doc_url": "https://www.holded.com/developers/v1/team-api/employees-time-tracking/listtimes"
+  },
+  "team_UpdateEmployee": {
+    "operation_id": "team_UpdateEmployee",
+    "api": "team",
+    "method": "PUT",
+    "path": "/api/team/v1/employees/{employeeId}",
+    "summary": "Update an employee",
+    "description": "Update an employee.",
+    "tags": [
+      "Employees"
+    ],
+    "parameters": [
+      {
+        "name": "employeeId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": ""
+      }
+    ],
+    "body_schema": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "lastName": {
+          "type": "string"
+        },
+        "mainEmail": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        },
+        "nationality": {
+          "type": "string"
+        },
+        "phone": {
+          "type": "string"
+        },
+        "mobile": {
+          "type": "string"
+        },
+        "dateOfBirth": {
+          "type": "string",
+          "description": "dd/mm/yyyy"
+        },
+        "gender": {
+          "type": "string",
+          "description": "male or female"
+        },
+        "mainLanguage": {
+          "type": "string",
+          "description": "options = English, English(UK), English(US), English(Canada), Spanish, Spanish(Spain), Spanish(Mexico), Spanish(Argentina), Spanish(Colombia), Portuguese, Portuguese(Portugal), Portuguese(Brazil), Catalan, Galician, Euskera, French, German(Deutsch), Italian, Greek, Swedish, Dutch, Finnish, Irish, Norwegian, Danish, Czech, Croatian, Russian, Polish"
+        },
+        "iban": {
+          "type": "string"
+        },
+        "timeOffPolicyId": {
+          "type": "string"
+        },
+        "timeOffSupervisors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "containing employeesId"
+        },
+        "reportingTo": {
+          "type": "string",
+          "description": "should be an employeeId"
+        },
+        "code": {
+          "type": "string",
+          "description": "nif"
+        },
+        "socialSecurityNum": {
+          "type": "string"
+        },
+        "address": {
+          "type": "object",
+          "properties": {
+            "address": {
+              "type": "string"
+            },
+            "city": {
+              "type": "string"
+            },
+            "postalCode": {
+              "type": "string"
+            },
+            "province": {
+              "type": "string"
+            },
+            "country": {
+              "type": "string"
+            }
+          }
+        },
+        "fiscalResidence": {
+          "type": "boolean"
+        },
+        "fiscalAddress": {
+          "type": "object",
+          "description": "You need to set fiscalResidence to false in order to be able to send a fiscalAdress",
+          "properties": {
+            "idNum": {
+              "type": "string"
+            },
+            "address": {
+              "type": "string"
+            },
+            "city": {
+              "type": "string"
+            },
+            "cityOfBirth": {
+              "type": "string"
+            },
+            "postalCode": {
+              "type": "string"
+            },
+            "province": {
+              "type": "string"
+            },
+            "country": {
+              "type": "string"
+            },
+            "countryOfBirth": {
+              "type": "string"
+            },
+            "endSituationDate": {
+              "type": "string"
+            }
+          }
+        },
+        "workplace": {
+          "type": "string",
+          "description": "workplace ID"
+        },
+        "teams": {
+          "type": "array",
+          "description": "array of strings containing team ID's",
+          "items": {
+            "type": "string"
+          }
+        },
+        "holdedUserId": {
+          "type": "string"
+        }
+      }
+    },
+    "body_required": false,
+    "content_type": "application/json",
+    "deprecated": false,
+    "doc_url": "https://www.holded.com/developers/v1/team-api/employees/update-employee"
+  },
+  "team_UpdateTime": {
+    "operation_id": "team_UpdateTime",
+    "api": "team",
+    "method": "PUT",
+    "path": "/api/team/v1/employees/times/{employeeTimeId}",
+    "summary": "Update a time-tracking",
+    "description": "Update a time-tracking.",
+    "tags": [
+      "Employees' time-tracking"
+    ],
+    "parameters": [
+      {
+        "name": "employeeTimeId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": ""
+      }
+    ],
+    "body_schema": {
+      "type": "object",
+      "properties": {
+        "startTmp": {
+          "type": "string"
+        },
+        "endTmp": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "startTmp",
+        "endTmp"
+      ]
+    },
+    "body_required": false,
+    "content_type": "application/json",
+    "deprecated": false,
+    "doc_url": "https://www.holded.com/developers/v1/team-api/employees-time-tracking/updatetime"
+  }
+}

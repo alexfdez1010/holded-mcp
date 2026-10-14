@@ -1,0 +1,43 @@
+[build-system]
+requires = ["hatchling>=1.27,<2"]
+build-backend = "hatchling.build"
+
+[project]
+name = "holded-api-mcp"
+version = "0.1.0"
+description = "A uv-installable MCP server for the Holded public API (Invoicing, CRM, Projects, Team, Accounting)"
+readme = "README.md"
+requires-python = ">=3.10"
+license = "MIT"
+authors = [{name = "Alejandro"}]
+keywords = ["holded", "erp", "invoicing", "mcp", "model-context-protocol"]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Programming Language :: Python :: 3",
+  "Topic :: Office/Business :: Financial :: Accounting",
+]
+dependencies = ["mcp>=2.3,<3", "httpx>=0.28,<1", "jsonschema>=4.23,<5"]
+
+[project.scripts]
+holded-mcp = "holded_mcp.server:main"
+
+[project.urls]
+Repository = "https://github.com/alexfdez1010/holded-mcp"
+Issues = "https://github.com/alexfdez1010/holded-mcp/issues"
+
+[dependency-groups]
+dev = ["pytest>=8.3,<10", "pytest-asyncio>=0.25,<2", "ruff>=0.11,<1", "pyyaml>=6,<7"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/holded_mcp"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+
+[tool.ruff]
+target-version = "py310"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "ASYNC"]
