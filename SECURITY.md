@@ -5,14 +5,16 @@
 The server uses two secrets, both supplied only through its environment:
 
 - `HOLDED_API_KEY`, the Holded API key. It grants the permissions of its Holded account; the server does not narrow them beyond the optional read-only mode. Endpoints also check the key's permission scopes, so grant only the scopes you need. The server sends the key only to `https://api.holded.com`, as `Authorization: Bearer <key>`.
-- `MCP_API_KEY_HASH`, the SHA-256 digest of the access key that MCP clients present as `Authorization: Bearer <access key>`. The server stores only the hash and compares digests in constant time. Use a long random access key (`holded-mcp --generate-key` produces 256 bits); an unsalted hash is only safe for high-entropy keys, not for passwords.
+- `MCP_PASSWORD_HASH`, a salted PBKDF2-SHA256 hash (600,000 iterations) of the password typed on the OAuth login page. The server never stores the password and compares hashes in constant time. Use a long, unique password.
 
-Anyone holding the access key can use the Holded API key's permissions through this server, so treat the access key like the Holded key itself.
+The server acts as its own OAuth 2.1 authorization server (dynamic client registration, authorization code with PKCE S256, refresh tokens). Client registrations, authorization codes and tokens are HMAC-SHA256-signed payloads whose key is derived from both secrets above; nothing is stored. Access tokens expire after one hour, refresh tokens after 90 days, and tokens are bound to this server's `/mcp` resource. Individual tokens cannot be revoked: changing the password invalidates all of them. Failed logins are limited to 10 per client address per 15 minutes.
+
+Anyone who knows the password, or holds a token, can use the Holded API key's permissions through this server, so treat both like the Holded key itself.
 
 - Serve the HTTP endpoint over HTTPS only (Railway's public domains terminate TLS).
 - Keep real keys out of source control, issue reports, screenshots, shell history, and shared client configuration. Prefer your host's secret variables and your client's secret storage.
-- The server does not automatically load `.env` files and has no key command-line option.
-- If the access key is exposed, generate a new one and replace `MCP_API_KEY_HASH`. If the Holded key is exposed, revoke it in Holded (Settings → Developers), create a new one, and update `HOLDED_API_KEY`.
+- The server does not automatically load `.env` files and has no key or password command-line option.
+- If the password or a token is exposed, choose a new password and replace `MCP_PASSWORD_HASH`. If the Holded key is exposed, revoke it in Holded (Settings → Developers), create a new one, and update `HOLDED_API_KEY`.
 
 ## Tool and data boundaries
 

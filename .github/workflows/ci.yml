@@ -41,4 +41,4 @@ jobs:
           uv pip install --python .wheel-smoke/bin/python dist/*.whl
           .wheel-smoke/bin/holded-mcp --help
           .wheel-smoke/bin/holded-mcp --version
-          .wheel-smoke/bin/holded-mcp --generate-key > /dev/null
+          echo smoke-password | .wheel-smoke/bin/holded-mcp --hash-password > /dev/null

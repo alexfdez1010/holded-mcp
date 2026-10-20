@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import getpass
 import math
 import os
 import sys
@@ -12,11 +13,13 @@ from typing import Annotated, Any, Literal
 import httpx
 from mcp import types
 from mcp.server import MCPServer
+from mcp.server.auth.provider import OAuthAuthorizationServerProvider
+from mcp.server.auth.settings import AuthSettings
 from mcp.server.mcpserver.exceptions import ToolError
 from pydantic import Field
 
 from holded_mcp import __version__
-from holded_mcp.auth import generate_key, hash_key, parse_key_hash
+from holded_mcp.auth import hash_password, parse_password_hash
 from holded_mcp.catalog import load_operations
 from holded_mcp.client import HoldedClient, HoldedError
 
@@ -45,6 +48,8 @@ def create_server(
     read_only: bool = False,
     timeout: float = 30,
     transport: httpx.AsyncBaseTransport | None = None,
+    auth: AuthSettings | None = None,
+    auth_server_provider: OAuthAuthorizationServerProvider[Any, Any, Any] | None = None,
 ) -> MCPServer:
     """Create an isolated server; injected HTTP transports are useful for tests."""
     if not math.isfinite(timeout) or timeout <= 0:
@@ -78,6 +83,8 @@ def create_server(
         ),
         lifespan=lifespan,
         log_level="WARNING",
+        auth=auth,
+        auth_server_provider=auth_server_provider,
     )
     local_read = types.ToolAnnotations(
         read_only_hint=True, destructive_hint=False, idempotent_hint=True, open_world_hint=False
@@ -207,19 +214,15 @@ def main() -> None:
     parser = argparse.ArgumentParser(
         description=(
             "Serve the Holded public API over MCP. HTTP mode needs HOLDED_API_KEY and "
-            "MCP_API_KEY_HASH; stdio mode needs only HOLDED_API_KEY."
+            "MCP_PASSWORD_HASH; stdio mode needs only HOLDED_API_KEY."
         )
     )
     parser.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
     parser.add_argument(
-        "--generate-key",
+        "--hash-password",
         action="store_true",
-        help="Print a new MCP access key and its MCP_API_KEY_HASH, then exit.",
-    )
-    parser.add_argument(
-        "--hash-key",
-        action="store_true",
-        help="Read an access key from stdin, print its MCP_API_KEY_HASH, then exit.",
+        help="Ask for a login password (or read it from stdin), print its MCP_PASSWORD_HASH, "
+        "then exit.",
     )
     parser.add_argument("--stdio", action="store_true", help="Serve over stdio instead of HTTP.")
     parser.add_argument(
@@ -246,16 +249,16 @@ def main() -> None:
         help="HTTP timeout in seconds (default: 30).",
     )
     args = parser.parse_args()
-    if args.generate_key:
-        key = generate_key()
-        print(f"MCP access key (give to clients): {key}")
-        print(f"MCP_API_KEY_HASH={hash_key(key)}")
-        return
-    if args.hash_key:
-        key = sys.stdin.readline().strip()
-        if not key:
-            parser.exit(2, "Pass the access key on stdin.\n")
-        print(hash_key(key))
+    if args.hash_password:
+        if sys.stdin.isatty():
+            password = getpass.getpass("Password: ")
+            if password != getpass.getpass("Repeat password: "):
+                parser.exit(2, "Passwords do not match.\n")
+        else:
+            password = sys.stdin.readline().rstrip("\r\n")
+        if not password:
+            parser.exit(2, "The password must not be empty.\n")
+        print(f"MCP_PASSWORD_HASH={hash_password(password)}")
         return
     api_key = os.environ.get("HOLDED_API_KEY", "")
     if not api_key.strip():
@@ -273,17 +276,20 @@ def main() -> None:
 
     import uvicorn
 
-    from holded_mcp.app import create_app
+    from holded_mcp.app import create_app, public_url_from_env
 
-    key_hash = os.environ.get("MCP_API_KEY_HASH", "")
+    password_hash = os.environ.get("MCP_PASSWORD_HASH", "")
     try:
-        parse_key_hash(key_hash)
+        parse_password_hash(password_hash)
     except ValueError:
         parser.exit(
-            2, "Set MCP_API_KEY_HASH (see holded-mcp --generate-key) before serving HTTP.\n"
+            2, "Set MCP_PASSWORD_HASH (see holded-mcp --hash-password) before serving HTTP.\n"
         )
+    public_url = public_url_from_env(args.port)
     try:
-        app = create_app(api_key, key_hash, read_only=args.read_only, timeout=args.timeout)
+        app = create_app(
+            api_key, password_hash, public_url, read_only=args.read_only, timeout=args.timeout
+        )
     except ValueError:
-        parser.exit(2, "Invalid HOLDED_API_KEY or timeout configuration.\n")
+        parser.exit(2, "Invalid HOLDED_API_KEY, MCP_PUBLIC_URL or timeout configuration.\n")
     uvicorn.run(app, host=args.host, port=args.port, proxy_headers=True, forwarded_allow_ips="*")

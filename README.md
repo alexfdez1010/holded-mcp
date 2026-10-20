@@ -15,65 +15,42 @@ The server reads two required environment variables:
 | Variable | Value |
 | --- | --- |
 | `HOLDED_API_KEY` | Your Holded API key, as is (**Holded → Settings → Developers**). The server sends it to Holded as `Authorization: Bearer <key>`. |
-| `MCP_API_KEY_HASH` | The SHA-256 hex digest of the **access key** that MCP clients use to call this server. |
+| `MCP_PASSWORD_HASH` | The PBKDF2-SHA256 hash of the **password** you type when an MCP client connects. |
 
-Clients authenticate with `Authorization: Bearer <access key>`. The server hashes the presented key and compares it in constant time with `MCP_API_KEY_HASH`, so the access key itself is never stored on the server. Requests without a valid key get `401`. `GET /health` is public, for health checks.
+The server is its own OAuth 2.1 authorization server, so clients connect with just the URL. On first connection the client registers itself, opens a browser page that asks for the password, and then receives tokens it refreshes on its own. Only the password hash is stored on the server. Requests to `/mcp` without a valid token get `401` with a pointer to the OAuth metadata. `GET /health` is public, for health checks.
 
-Generate a random access key and its hash:
+Generate the hash (it asks for the password twice; you can also pipe the password on stdin):
 
 ```sh
-uvx --from git+https://github.com/alexfdez1010/holded-mcp.git holded-mcp --generate-key
-# MCP access key (give to clients): 3q2-...
-# MCP_API_KEY_HASH=9f86d0...
+uvx --from git+https://github.com/alexfdez1010/holded-mcp.git holded-mcp --hash-password
+# MCP_PASSWORD_HASH=pbkdf2-sha256:600000:...
 ```
 
-To hash an existing key instead, pipe it in: `printf %s "$KEY" | holded-mcp --hash-key` (equivalent to `printf %s "$KEY" | shasum -a 256`).
+OAuth needs the server's public URL. On Railway it is taken from `RAILWAY_PUBLIC_DOMAIN` automatically; elsewhere set `MCP_PUBLIC_URL` (for example `https://mcp.example.com`, HTTPS required except for `localhost`). Without either, the server assumes `http://localhost:<port>`.
+
+Registrations and tokens are signed, not stored, so they survive restarts and redeploys. Access tokens last one hour and refresh tokens 90 days. Changing `MCP_PASSWORD_HASH` (or `HOLDED_API_KEY`) signs every client out. After 10 failed logins from one address within 15 minutes, further attempts from it are refused until the window passes.
 
 Optional variables: `PORT` (default `8000`; Railway sets it), `HOST` (default `0.0.0.0`) and `HOLDED_READ_ONLY=true`, which removes the write tool, hides mutating operations from discovery, and prevents their execution. The CLI also accepts `--read-only`, `--port`, `--host` and `--timeout <seconds>` (default 30).
 
 ## Deploy on Railway
 
-Create a service from this GitHub repository, set `HOLDED_API_KEY` and `MCP_API_KEY_HASH` in its **Variables**, and generate a public domain under **Settings → Networking**. [`railpack.json`](railpack.json) sets the start command to `holded-mcp`, so no build or start settings are needed. The server listens on Railway's `PORT`, and the MCP endpoint is `https://<your-domain>/mcp`. `curl https://<your-domain>/health` returns `{"status":"ok"}`.
+Create a service from this GitHub repository, set `HOLDED_API_KEY` and `MCP_PASSWORD_HASH` in its **Variables**, and generate a public domain under **Settings → Networking**. [`railpack.json`](railpack.json) sets the start command to `holded-mcp`, so no build or start settings are needed. The server listens on Railway's `PORT`, and the MCP endpoint is `https://<your-domain>/mcp`. `curl https://<your-domain>/health` returns `{"status":"ok"}`. If you use a custom domain, set `MCP_PUBLIC_URL` to it.
 
 ## Claude Desktop
 
-Claude Desktop's custom connectors only support OAuth, so connect through [`mcp-remote`](https://www.npmjs.com/package/mcp-remote), which adds the bearer header. Requires Node.js. Open **Settings → Developer → Edit Config** and add to `claude_desktop_config.json`:
-
-```json
-{
-  "mcpServers": {
-    "holded": {
-      "command": "npx",
-      "args": [
-        "-y",
-        "mcp-remote",
-        "https://<your-domain>/mcp",
-        "--header",
-        "Authorization:${AUTH_HEADER}"
-      ],
-      "env": {
-        "AUTH_HEADER": "Bearer REPLACE_WITH_YOUR_ACCESS_KEY"
-      }
-    }
-  }
-}
-```
-
-Restart Claude Desktop. Keep the header in `env` with no space after `Authorization:`; some platforms split arguments that contain spaces.
+Open **Settings → Connectors → Add custom connector**, enter `https://<your-domain>/mcp`, and select **Connect**. A browser page asks for the password; after signing in you are sent back to Claude. No OAuth client ID or secret is needed. The same works in claude.ai.
 
 ## Claude Code
 
 ```sh
-claude mcp add --transport http --scope user holded https://<your-domain>/mcp \
-  --header "Authorization: Bearer $HOLDED_MCP_ACCESS_KEY"
-claude mcp list
+claude mcp add --transport http --scope user holded https://<your-domain>/mcp
 ```
 
-Use `/mcp` in an interactive session to check the connection. Other clients that support streamable HTTP with custom headers connect the same way: URL `https://<your-domain>/mcp`, header `Authorization: Bearer <access key>`.
+Then run `/mcp` in an interactive session, choose `holded`, and authenticate: the browser opens the password page. Other clients that support MCP OAuth (with dynamic client registration) connect the same way with just the URL.
 
 ### Local stdio mode
 
-To run the server locally as a stdio process (no HTTP, no access key), pass `--stdio`:
+To run the server locally as a stdio process (no HTTP, no password), pass `--stdio`:
 
 ```sh
 export HOLDED_API_KEY='REPLACE_WITH_YOUR_HOLDED_API_KEY'
@@ -158,20 +135,21 @@ git clone https://github.com/alexfdez1010/holded-mcp.git
 cd holded-mcp
 uv sync --locked
 export HOLDED_API_KEY='REPLACE_WITH_YOUR_HOLDED_API_KEY'
-export MCP_API_KEY_HASH="$(printf %s dev-access-key | uv run holded-mcp --hash-key)"
+export MCP_PASSWORD_HASH="$(echo dev-password | uv run holded-mcp --hash-password | cut -d= -f2-)"
 uv run holded-mcp --port 8000
 ```
 
-The server then listens on `http://localhost:8000/mcp`; connect with `Authorization: Bearer dev-access-key`. The checkout selects Python 3.12 through `.python-version`, and the checked-in `uv.lock` makes dependency resolution reproducible. Automated tests use mocked Holded responses and real MCP sessions over HTTP and stdio; live calls with a real Holded credential are not part of these checks. See [CONTRIBUTING.md](CONTRIBUTING.md) for tests and catalog updates.
+The server then listens on `http://localhost:8000/mcp`; connect with that URL and sign in with `dev-password`. The checkout selects Python 3.12 through `.python-version`, and the checked-in `uv.lock` makes dependency resolution reproducible. Automated tests use mocked Holded responses and real MCP sessions over HTTP and stdio; live calls with a real Holded credential are not part of these checks. See [CONTRIBUTING.md](CONTRIBUTING.md) for tests and catalog updates.
 
 ## Troubleshooting
 
 | Symptom | Check |
 | --- | --- |
-| Missing API key or hash at startup | Set `HOLDED_API_KEY` and `MCP_API_KEY_HASH` (64 hex characters) in the server's environment, for example Railway's Variables. |
-| `401 Unauthorized` from `/mcp` | Send `Authorization: Bearer <access key>` with the raw access key, not its hash, and check that `MCP_API_KEY_HASH` is the hash of that exact key (no trailing newline: use `printf %s`). |
+| Missing API key or hash at startup | Set `HOLDED_API_KEY` and `MCP_PASSWORD_HASH` (the full `pbkdf2-sha256:...` value from `--hash-password`) in the server's environment, for example Railway's Variables. |
+| Login page says the link expired, or the client reports an OAuth error | Start the connection again (sign-in links last 10 minutes). Check that `MCP_PUBLIC_URL`, or Railway's public domain, matches the URL the client uses. |
+| `Wrong password` | Generate a new hash with `--hash-password` and replace `MCP_PASSWORD_HASH`; this also signs out every client. |
 | Authentication or permission error | Check that the API key is current, that the Holded module is enabled for your account, and that the key has the scope listed in the operation's description. |
-| Claude Desktop does not connect | Check that `npx` is on Claude Desktop's `PATH` (or use its absolute path) and that the URL ends in `/mcp`. |
+| Claude Desktop does not connect | Check that the connector URL ends in `/mcp` and that `curl https://<your-domain>/.well-known/oauth-authorization-server` returns metadata with your domain as `issuer`. |
 | Unknown operation or invalid arguments | Search the catalog, copy the exact ID, and inspect its input schema. |
 | No write tool | Unset `HOLDED_READ_ONLY` and remove `--read-only` if you intend to allow mutations. |
 | Rate-limit error | Wait for the reported `Retry-After` before making another call. |
