@@ -1,4 +1,4 @@
-"""Discover and call the Holded API over MCP stdio."""
+"""Discover and call the Holded API over MCP."""
 
 from __future__ import annotations
 
@@ -16,6 +16,7 @@ from mcp.server.mcpserver.exceptions import ToolError
 from pydantic import Field
 
 from holded_mcp import __version__
+from holded_mcp.auth import generate_key, hash_key, parse_key_hash
 from holded_mcp.catalog import load_operations
 from holded_mcp.client import HoldedClient, HoldedError
 
@@ -202,12 +203,42 @@ def positive_timeout(value: str) -> float:
 
 
 def main() -> None:
-    """Console entry point. Stdout is reserved for MCP protocol messages."""
+    """Console entry point: serve over HTTP by default, or stdio for local clients."""
     parser = argparse.ArgumentParser(
-        description="Serve the Holded public API over MCP stdio using HOLDED_API_KEY."
+        description=(
+            "Serve the Holded public API over MCP. HTTP mode needs HOLDED_API_KEY and "
+            "MCP_API_KEY_HASH; stdio mode needs only HOLDED_API_KEY."
+        )
     )
     parser.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
-    parser.add_argument("--read-only", action="store_true", help="Expose GET operations only.")
+    parser.add_argument(
+        "--generate-key",
+        action="store_true",
+        help="Print a new MCP access key and its MCP_API_KEY_HASH, then exit.",
+    )
+    parser.add_argument(
+        "--hash-key",
+        action="store_true",
+        help="Read an access key from stdin, print its MCP_API_KEY_HASH, then exit.",
+    )
+    parser.add_argument("--stdio", action="store_true", help="Serve over stdio instead of HTTP.")
+    parser.add_argument(
+        "--host",
+        default=os.environ.get("HOST", "0.0.0.0"),
+        help="HTTP bind address (default: $HOST or 0.0.0.0).",
+    )
+    parser.add_argument(
+        "--port",
+        type=int,
+        default=int(os.environ.get("PORT", "8000")),
+        help="HTTP port (default: $PORT or 8000).",
+    )
+    parser.add_argument(
+        "--read-only",
+        action="store_true",
+        default=os.environ.get("HOLDED_READ_ONLY", "").strip().lower() in {"1", "true", "yes"},
+        help="Expose GET operations only (also enabled by HOLDED_READ_ONLY=true).",
+    )
     parser.add_argument(
         "--timeout",
         type=positive_timeout,
@@ -215,14 +246,44 @@ def main() -> None:
         help="HTTP timeout in seconds (default: 30).",
     )
     args = parser.parse_args()
+    if args.generate_key:
+        key = generate_key()
+        print(f"MCP access key (give to clients): {key}")
+        print(f"MCP_API_KEY_HASH={hash_key(key)}")
+        return
+    if args.hash_key:
+        key = sys.stdin.readline().strip()
+        if not key:
+            parser.exit(2, "Pass the access key on stdin.\n")
+        print(hash_key(key))
+        return
     api_key = os.environ.get("HOLDED_API_KEY", "")
     if not api_key.strip():
         parser.exit(2, "Set HOLDED_API_KEY to your Holded API key before starting.\n")
+    if args.stdio:
+        try:
+            server = create_server(api_key, read_only=args.read_only, timeout=args.timeout)
+        except ValueError:
+            parser.exit(2, "Invalid HOLDED_API_KEY or timeout configuration.\n")
+        try:
+            server.run(transport="stdio")
+        except KeyboardInterrupt:
+            sys.exit(0)
+        return
+
+    import uvicorn
+
+    from holded_mcp.app import create_app
+
+    key_hash = os.environ.get("MCP_API_KEY_HASH", "")
     try:
-        server = create_server(api_key, read_only=args.read_only, timeout=args.timeout)
+        parse_key_hash(key_hash)
+    except ValueError:
+        parser.exit(
+            2, "Set MCP_API_KEY_HASH (see holded-mcp --generate-key) before serving HTTP.\n"
+        )
+    try:
+        app = create_app(api_key, key_hash, read_only=args.read_only, timeout=args.timeout)
     except ValueError:
         parser.exit(2, "Invalid HOLDED_API_KEY or timeout configuration.\n")
-    try:
-        server.run(transport="stdio")
-    except KeyboardInterrupt:
-        sys.exit(0)
+    uvicorn.run(app, host=args.host, port=args.port, proxy_headers=True, forwarded_allow_ips="*")

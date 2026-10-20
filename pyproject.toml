@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 [project]
 name = "holded-api-mcp"
 version = "0.1.0"
-description = "A uv-installable MCP server for the Holded public API"
+description = "A deployable MCP server (FastAPI, streamable HTTP) for the Holded public API"
 readme = "README.md"
 requires-python = ">=3.10"
 license = "MIT"
@@ -16,7 +16,13 @@ classifiers = [
   "Programming Language :: Python :: 3",
   "Topic :: Office/Business :: Financial :: Accounting",
 ]
-dependencies = ["mcp>=2.3,<3", "httpx>=0.28,<1", "jsonschema>=4.23,<5"]
+dependencies = [
+  "mcp>=2.3,<3",
+  "httpx>=0.28,<1",
+  "jsonschema>=4.23,<5",
+  "fastapi>=0.115,<1",
+  "uvicorn>=0.34,<1",
+]
 
 [project.scripts]
 holded-mcp = "holded_mcp.server:main"

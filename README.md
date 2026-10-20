@@ -1,111 +1,94 @@
 # Holded API MCP
 
-A local [Model Context Protocol](https://modelcontextprotocol.io/) server for [Holded](https://www.holded.com/)'s public API, built with the [official Python MCP SDK](https://github.com/modelcontextprotocol/python-sdk). Connect your MCP client to Holded using your own API key.
+A deployable [Model Context Protocol](https://modelcontextprotocol.io/) server for [Holded](https://www.holded.com/)'s public API, built with [FastAPI](https://fastapi.tiangolo.com/) and the [official Python MCP SDK](https://github.com/modelcontextprotocol/python-sdk). It serves MCP over **streamable HTTP** at `/mcp`, so one deployment (for example on [Railway](https://railway.com/)) can be shared by Claude Desktop, Claude Code and other MCP clients.
 
 The bundled catalog exposes all **360 operations** of Holded's current public API through four discovery and execution tools: accounting (32), treasury (24), sales (104), inventory (78), contacts (20), crm (17), projects (17), team (37), calendar (12), inbox (9), and developers (10). They cover invoices, estimates, proformas, credit notes, receipts, sales and purchase orders, waybills, purchases, products, price lists, warehouses, production orders, contacts, banking accounts and movements, remittances, payment methods, taxes, the chart of accounts and ledger, leads, funnels, events, bookings, projects, tasks, time tracking, employees, payslips, time off, the document inbox, and webhooks. See [API coverage and limitations](docs/api-coverage.md).
 
-Requires Python 3.10 or newer. The server uses **stdio**: your MCP client starts and manages the process.
+Requires Python 3.10 or newer.
 
-[Quick start](#quick-start-with-uv) · [Codex](#codex) · [Claude Code](#claude-code) · [Tools](#tools) · [API limitations](#api-behavior-and-limitations) · [Troubleshooting](#troubleshooting)
+[Configuration](#configuration) · [Deploy on Railway](#deploy-on-railway) · [Claude Desktop](#claude-desktop) · [Claude Code](#claude-code) · [Tools](#tools) · [API limitations](#api-behavior-and-limitations) · [Troubleshooting](#troubleshooting)
 
-## Quick start with uv
+## Configuration
 
-Install [uv](https://docs.astral.sh/uv/getting-started/installation/) and Git, then create an API key in **Holded → Settings → Developers**.
+The server reads two required environment variables:
 
-Set `HOLDED_API_KEY` in the environment of the process starting the server:
+| Variable | Value |
+| --- | --- |
+| `HOLDED_API_KEY` | Your Holded API key, as is (**Holded → Settings → Developers**). The server sends it to Holded as `Authorization: Bearer <key>`. |
+| `MCP_API_KEY_HASH` | The SHA-256 hex digest of the **access key** that MCP clients use to call this server. |
 
-```sh
-export HOLDED_API_KEY='REPLACE_WITH_YOUR_HOLDED_API_KEY'
-uvx --from git+https://github.com/alexfdez1010/holded-mcp.git holded-mcp
-```
+Clients authenticate with `Authorization: Bearer <access key>`. The server hashes the presented key and compares it in constant time with `MCP_API_KEY_HASH`, so the access key itself is never stored on the server. Requests without a valid key get `401`. `GET /health` is public, for health checks.
 
-PowerShell:
-
-```powershell
-$env:HOLDED_API_KEY = 'REPLACE_WITH_YOUR_HOLDED_API_KEY'
-uvx --from git+https://github.com/alexfdez1010/holded-mcp.git holded-mcp
-```
-
-The running server waits for MCP messages on stdin. Use the client configuration below for normal use; running it in a terminal does not open an interactive prompt. Installation downloads dependencies, while Holded API calls happen only when your client invokes an execution tool.
-
-Install a persistent executable if preferred:
+Generate a random access key and its hash:
 
 ```sh
-uv tool install git+https://github.com/alexfdez1010/holded-mcp.git
-holded-mcp --help
+uvx --from git+https://github.com/alexfdez1010/holded-mcp.git holded-mcp --generate-key
+# MCP access key (give to clients): 3q2-...
+# MCP_API_KEY_HASH=9f86d0...
 ```
 
-If uv reports that its tools directory is missing from `PATH`, run `uv tool update-shell` and restart your shell. The distribution is named `holded-api-mcp`; the executable is `holded-mcp`. These instructions install from GitHub and do not require a PyPI release. For a reproducible installation, append `@<commit-sha>` to the Git URL. See [uv's tool guide](https://docs.astral.sh/uv/guides/tools/).
+To hash an existing key instead, pipe it in: `printf %s "$KEY" | holded-mcp --hash-key` (equivalent to `printf %s "$KEY" | shasum -a 256`).
 
-## MCP client configuration
+Optional variables: `PORT` (default `8000`; Railway sets it), `HOST` (default `0.0.0.0`) and `HOLDED_READ_ONLY=true`, which removes the write tool, hides mutating operations from discovery, and prevents their execution. The CLI also accepts `--read-only`, `--port`, `--host` and `--timeout <seconds>` (default 30).
 
-Add this entry to your client's MCP server configuration. The exact location depends on the client.
+## Deploy on Railway
+
+1. Create a Railway project from this GitHub repository. [`railway.json`](railway.json) builds it with Railpack (it detects `uv.lock`), starts `holded-mcp`, and health-checks `/health`.
+2. In the service's **Variables**, set `HOLDED_API_KEY` and `MCP_API_KEY_HASH` (and optionally `HOLDED_READ_ONLY=true`).
+3. Under **Settings → Networking**, generate a public domain. The MCP endpoint is `https://<your-domain>/mcp`.
+
+Check the deployment:
+
+```sh
+curl https://<your-domain>/health   # {"status":"ok"}
+```
+
+Any other host that runs a Python process works the same way: install the package and run `holded-mcp` with the two variables set.
+
+## Claude Desktop
+
+Claude Desktop's custom connectors only support OAuth, so connect through [`mcp-remote`](https://www.npmjs.com/package/mcp-remote), which adds the bearer header. Requires Node.js. Open **Settings → Developer → Edit Config** and add to `claude_desktop_config.json`:
 
 ```json
 {
   "mcpServers": {
     "holded": {
-      "command": "uvx",
+      "command": "npx",
       "args": [
-        "--from",
-        "git+https://github.com/alexfdez1010/holded-mcp.git",
-        "holded-mcp"
+        "-y",
+        "mcp-remote",
+        "https://<your-domain>/mcp",
+        "--header",
+        "Authorization:${AUTH_HEADER}"
       ],
       "env": {
-        "HOLDED_API_KEY": "REPLACE_WITH_YOUR_HOLDED_API_KEY"
+        "AUTH_HEADER": "Bearer REPLACE_WITH_YOUR_ACCESS_KEY"
       }
     }
   }
 }
 ```
 
-Keep your real configuration private. When your client supports secrets or inherited environment variables, use those instead of storing the key in its JSON file. Desktop clients may require the absolute path to `uvx` if they do not inherit your shell's `PATH`.
+Restart Claude Desktop. Keep the header in `env` with no space after `Authorization:`; some platforms split arguments that contain spaces.
 
-For read-only access, append `"--read-only"` after `"holded-mcp"` in `args`. This removes the write tool from the MCP tool list, hides mutating operations from discovery, and prevents their execution.
-
-### Codex
-
-Add the following to your personal `~/.codex/config.toml`:
-
-```toml
-[mcp_servers.holded]
-command = "uvx"
-args = ["--from", "git+https://github.com/alexfdez1010/holded-mcp.git", "holded-mcp"]
-env_vars = ["HOLDED_API_KEY"]
-startup_timeout_sec = 60
-```
-
-Export `HOLDED_API_KEY` in your shell, then start `codex` from that shell. `env_vars` forwards the existing variable without putting its value in the TOML file. The longer startup timeout allows the initial Git download and dependency installation. Run `codex mcp list` or use `/mcp` in an interactive session to check the connection.
-
-For read-only access, add `"--read-only"` to the end of `args`.
-
-### Claude Code
-
-After exporting `HOLDED_API_KEY`, register the server in your personal configuration:
+## Claude Code
 
 ```sh
-claude mcp add --env HOLDED_API_KEY="$HOLDED_API_KEY" --transport stdio --scope user holded -- uvx --from git+https://github.com/alexfdez1010/holded-mcp.git holded-mcp
+claude mcp add --transport http --scope user holded https://<your-domain>/mcp \
+  --header "Authorization: Bearer $HOLDED_MCP_ACCESS_KEY"
 claude mcp list
 ```
 
-`--scope user` makes the server available across your projects and keeps this configuration outside the repository. The command stores the key in Claude Code's local configuration; protect that file. Use `/mcp` in an interactive Claude Code session to check server status and available tools. See [Claude Code MCP setup](https://code.claude.com/docs/en/mcp).
+Use `/mcp` in an interactive session to check the connection. Other clients that support streamable HTTP with custom headers connect the same way: URL `https://<your-domain>/mcp`, header `Authorization: Bearer <access key>`.
 
-For read-only access, append `--read-only` to the registration command after `holded-mcp`. A normal connection exposes four tools; a read-only connection exposes three.
+### Local stdio mode
 
-## Authentication and configuration
-
-`HOLDED_API_KEY` contains the raw API key. The server sends it on every request as `Authorization: Bearer <key>`, and requests only go to `https://api.holded.com/api/v2/...`. Each endpoint also requires a permission scope (for example `sales:invoices.read`), listed in the operation's description; grant the scopes you need to the key in Holded. Each user runs their own local server with their own key.
-
-The server does not automatically load `.env` files and has no key command-line option. A missing or empty `HOLDED_API_KEY` causes startup to exit with a message on stderr. `--help` and `--version` work without credentials.
+To run the server locally as a stdio process (no HTTP, no access key), pass `--stdio`:
 
 ```sh
-holded-mcp --help
-holded-mcp --version
-holded-mcp --read-only
-holded-mcp --timeout 60
+export HOLDED_API_KEY='REPLACE_WITH_YOUR_HOLDED_API_KEY'
+uvx --from git+https://github.com/alexfdez1010/holded-mcp.git holded-mcp --stdio
 ```
-
-`--timeout` sets the HTTP timeout in seconds and accepts a positive finite number. Protocol output goes to stdout; diagnostics go to stderr.
 
 ## Tools
 
@@ -185,21 +168,22 @@ git clone https://github.com/alexfdez1010/holded-mcp.git
 cd holded-mcp
 uv sync --locked
 export HOLDED_API_KEY='REPLACE_WITH_YOUR_HOLDED_API_KEY'
-uv run holded-mcp
+export MCP_API_KEY_HASH="$(printf %s dev-access-key | uv run holded-mcp --hash-key)"
+uv run holded-mcp --port 8000
 ```
 
-The checkout selects Python 3.12 through `.python-version`. The checked-in `uv.lock` makes dependency resolution reproducible. Automated tests use mocked Holded responses and a real MCP stdio session; live calls with a real Holded credential are not part of these checks. See [CONTRIBUTING.md](CONTRIBUTING.md) for tests, builds, and catalog updates.
+The server then listens on `http://localhost:8000/mcp`; connect with `Authorization: Bearer dev-access-key`. The checkout selects Python 3.12 through `.python-version`, and the checked-in `uv.lock` makes dependency resolution reproducible. Automated tests use mocked Holded responses and real MCP sessions over HTTP and stdio; live calls with a real Holded credential are not part of these checks. See [CONTRIBUTING.md](CONTRIBUTING.md) for tests and catalog updates.
 
 ## Troubleshooting
 
 | Symptom | Check |
 | --- | --- |
-| Missing API key at startup | Set `HOLDED_API_KEY` in the environment of the MCP client or its server configuration. |
+| Missing API key or hash at startup | Set `HOLDED_API_KEY` and `MCP_API_KEY_HASH` (64 hex characters) in the server's environment, for example Railway's Variables. |
+| `401 Unauthorized` from `/mcp` | Send `Authorization: Bearer <access key>` with the raw access key, not its hash, and check that `MCP_API_KEY_HASH` is the hash of that exact key (no trailing newline: use `printf %s`). |
 | Authentication or permission error | Check that the API key is current, that the Holded module is enabled for your account, and that the key has the scope listed in the operation's description. |
-| Tool not found | Check that `uvx` is on the client's `PATH`, or configure its absolute path. |
+| Claude Desktop does not connect | Check that `npx` is on Claude Desktop's `PATH` (or use its absolute path) and that the URL ends in `/mcp`. |
 | Unknown operation or invalid arguments | Search the catalog, copy the exact ID, and inspect its input schema. |
-| No write tool | Remove `--read-only` if you intend to allow mutations. |
-| Server appears idle in a terminal | Stdio servers wait for an MCP client; configure the client to start this process. |
+| No write tool | Unset `HOLDED_READ_ONLY` and remove `--read-only` if you intend to allow mutations. |
 | Rate-limit error | Wait for the reported `Retry-After` before making another call. |
 
 ## License

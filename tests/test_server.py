@@ -201,7 +201,7 @@ async def test_actual_stdio_handshake():
     # A fake key suffices: initializing and browsing the catalog never calls Holded.
     params = StdioServerParameters(
         command=sys.executable,
-        args=["-m", "holded_mcp", "--read-only"],
+        args=["-m", "holded_mcp", "--stdio", "--read-only"],
         env={**os.environ, "HOLDED_API_KEY": "holded_stdio_test"},
     )
     async with Client(params) as client:

@@ -2,14 +2,17 @@
 
 ## Credential handling
 
-Run this local server with your own Holded API key in `HOLDED_API_KEY`. The API key grants the permissions of its Holded account; the server does not narrow those permissions beyond the optional `--read-only` mode. Endpoints also check the key's permission scopes, so grant only the scopes you need. The server sends the key only to `https://api.holded.com`, as `Authorization: Bearer <key>`.
+The server uses two secrets, both supplied only through its environment:
 
-- Keep real API keys out of source control, issue reports, screenshots, shell history, and shared client configuration.
-- Prefer your MCP client's secret storage or inherited environment support when available.
-- Do not pass API keys as server command-line arguments. The server accepts credentials only through its environment and does not automatically load `.env` files. Client registration commands, such as Claude Code's `--env` option, may temporarily include the API key in the client's process arguments and store it in private local configuration; protect that configuration.
-- If an API key is exposed, revoke it in Holded (Settings → Developers), create a new one, and update your private configuration.
+- `HOLDED_API_KEY`, the Holded API key. It grants the permissions of its Holded account; the server does not narrow them beyond the optional read-only mode. Endpoints also check the key's permission scopes, so grant only the scopes you need. The server sends the key only to `https://api.holded.com`, as `Authorization: Bearer <key>`.
+- `MCP_API_KEY_HASH`, the SHA-256 digest of the access key that MCP clients present as `Authorization: Bearer <access key>`. The server stores only the hash and compares digests in constant time. Use a long random access key (`holded-mcp --generate-key` produces 256 bits); an unsalted hash is only safe for high-entropy keys, not for passwords.
 
-The server communicates with Holded over HTTPS and uses stdio for its local MCP transport. It does not provide a network MCP listener. Use a separate credential for each user running the server.
+Anyone holding the access key can use the Holded API key's permissions through this server, so treat the access key like the Holded key itself.
+
+- Serve the HTTP endpoint over HTTPS only (Railway's public domains terminate TLS).
+- Keep real keys out of source control, issue reports, screenshots, shell history, and shared client configuration. Prefer your host's secret variables and your client's secret storage.
+- The server does not automatically load `.env` files and has no key command-line option.
+- If the access key is exposed, generate a new one and replace `MCP_API_KEY_HASH`. If the Holded key is exposed, revoke it in Holded (Settings → Developers), create a new one, and update `HOLDED_API_KEY`.
 
 ## Tool and data boundaries
 
