@@ -33,17 +33,7 @@ Optional variables: `PORT` (default `8000`; Railway sets it), `HOST` (default `0
 
 ## Deploy on Railway
 
-1. Create a Railway project from this GitHub repository. [`railway.json`](railway.json) builds it with Railpack (it detects `uv.lock`), starts `holded-mcp`, and health-checks `/health`.
-2. In the service's **Variables**, set `HOLDED_API_KEY` and `MCP_API_KEY_HASH` (and optionally `HOLDED_READ_ONLY=true`).
-3. Under **Settings → Networking**, generate a public domain. The MCP endpoint is `https://<your-domain>/mcp`.
-
-Check the deployment:
-
-```sh
-curl https://<your-domain>/health   # {"status":"ok"}
-```
-
-Any other host that runs a Python process works the same way: install the package and run `holded-mcp` with the two variables set.
+Create a service from this GitHub repository, set `HOLDED_API_KEY` and `MCP_API_KEY_HASH` in its **Variables**, set the start command to `uv run holded-mcp`, and generate a public domain under **Settings → Networking**. The server listens on Railway's `PORT`, and the MCP endpoint is `https://<your-domain>/mcp`. `curl https://<your-domain>/health` returns `{"status":"ok"}`.
 
 ## Claude Desktop
 
